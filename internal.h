@@ -1,8 +1,10 @@
-#ifndef __INTERNAL__
-#define __INTERNAL__
+#ifndef __INTERNAL_H__
+#define __INTERNAL_H__
 
 #include <climits>
 #include <vector>
+#include <tuple>
+#include <mutex>
 #define SWAP(x, y) _swap(&x, &y)
 
 template <typename T>
@@ -15,11 +17,13 @@ void _swap (T *a, T *b) {
 }
 
 typedef struct FibNode *FibNodePtr;
-typedef struct AdjItem *AdjItemPtr;
-typedef std::vector<AdjItemPtr> *AdjListPtr;    // adjacency list
-typedef class FibonacciHeap FibonacciHeapPtr;
+typedef std::vector<FibNodePtr> AdjNodeEdges;
+typedef std::vector<AdjNodeEdges> AdjList;    // adjacency list
+typedef std::tuple<unsigned, unsigned> *EdgePtr;    // min spanning tree member
 
-class FibonacciHeap;
+extern unsigned char speed; // algorithm speed limiter
+extern bool pause_execution;
+extern std::mutex sync_mtx; 
 
 struct FibNode {
     unsigned id;
@@ -29,11 +33,6 @@ struct FibNode {
     int key;
     unsigned degree;    // number of children
     bool mark;          // whether X has lost child since X was made a child
-};
-
-struct AdjItem {
-    FibNodePtr data;
-    AdjItemPtr next;
 };
 
 #endif // __INTERNAL__
