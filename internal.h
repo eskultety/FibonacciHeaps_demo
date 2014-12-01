@@ -11,9 +11,9 @@ template <typename T>
 void _swap (T *a, T *b) {
     if (*a == *b)
         return;
-    T *tmp = a;
+    T tmp = *a;
     *a = *b;
-    *b = *tmp;
+    *b = tmp;
 }
 
 typedef struct FibNode *FibNodePtr;
