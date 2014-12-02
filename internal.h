@@ -17,9 +17,9 @@ void _swap (T *a, T *b) {
 }
 
 typedef struct FibNode *FibNodePtr;
+typedef std::vector<std::tuple<int, int>> EdgeSet;   // min spanning tree
 typedef std::vector<FibNodePtr> AdjNodeEdges;
 typedef std::vector<AdjNodeEdges> AdjList;    // adjacency list
-typedef std::tuple<unsigned, unsigned> *EdgePtr;    // min spanning tree member
 
 extern unsigned char speed; // algorithm speed limiter
 extern bool pause_execution;
