@@ -5,7 +5,6 @@
 #-------------------------------------------------
 
 QT       += core gui
-
 QMAKE_CXXFLAGS += -std=c++11
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
@@ -13,21 +12,28 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = gal_proj
 TEMPLATE = app
 
+SOURCES += main.cpp \
+           mainwindow.cpp \
+           myqgraphicsview.cpp \
+           gplace.cpp \
+           gedge.cpp \
+           xmlfileio.cpp \
+           simulationdialog.cpp \
+           Prim.cpp \
+           FibHeap.cpp
 
-SOURCES += main.cpp\
-        mainwindow.cpp \
-    myqgraphicsview.cpp \
-    gplace.cpp \
-    gedge.cpp \
-    xmlfileio.cpp \
-    simulationdialog.cpp
+HEADERS += mainwindow.h \
+           myqgraphicsview.h \
+           gplace.h \
+           gedge.h \
+           xmlfileio.h \
+           simulationdialog.h \
+           Prim.h \
+           FibHeap.h \
+           internal.h
 
-HEADERS  += mainwindow.h \
-    myqgraphicsview.h \
-    gplace.h \
-    gedge.h \
-    xmlfileio.h \
-    simulationdialog.h
+FORMS += mainwindow.ui \
+         simulationdialog.ui
 
-FORMS    += mainwindow.ui \
-    simulationdialog.ui
+DEFINES += WITH_GUI
+
