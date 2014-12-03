@@ -315,12 +315,12 @@ FibHeap::FibFindNode(unsigned id)
     FibNodePtr ret = nullptr;
     FibNodePtr ptr = this->min;
 
-    ret = this->FibFindID(ptr, id);
+    ret = this->FibFindImpl(ptr, id);
     return ret;
 }
 
 FibNodePtr
-FibHeap::FibFindID(FibNodePtr x, unsigned id)
+FibHeap::FibFindImpl(FibNodePtr x, unsigned id)
 {
     FibNodePtr ptr = x;
     FibNodePtr tmp = ptr;
@@ -331,7 +331,7 @@ FibHeap::FibFindID(FibNodePtr x, unsigned id)
                 return ptr;
             tmp = ptr;
             ptr = ptr->right;
-            if ((tmp = this->FibFindID(tmp->child, id)))
+            if ((tmp = this->FibFindImpl(tmp->child, id)))
                 return tmp;
         } while (ptr != x);
     }

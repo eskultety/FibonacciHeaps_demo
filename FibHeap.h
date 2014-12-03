@@ -15,7 +15,7 @@ class FibHeap
         int FibHeapLink(FibNodePtr y, FibNodePtr x);
         int FibCascadingCut(FibNodePtr y);
         int FibCut(FibNodePtr x, FibNodePtr y);
-        FibNodePtr FibFindID(FibNodePtr x, unsigned id);
+        FibNodePtr FibFindImpl(FibNodePtr x, unsigned id);
         void FibDeleteHeap(FibNodePtr x);
         void FibMoveToRoot(FibNodePtr x);
 
