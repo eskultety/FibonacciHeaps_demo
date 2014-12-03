@@ -8,6 +8,7 @@
 #include <QMouseEvent>
 #include <QGraphicsLineItem>
 #include <QPointF>
+#include <QInputDialog>
 #include "gplace.h"
 #include "gedge.h"
 
@@ -23,7 +24,9 @@ public:
     explicit MyQGraphicsView(QWidget *parent = 0);
     void setDrawType(int m_draw_type);
     void makeItemsSelectable(bool is_selectable);
-    void clearView(void);
+    void clearAll();
+    void clearView();
+    void redrawView();
 
 signals:
 
@@ -49,6 +52,7 @@ private:
     bool drawing_edge;      // true while mouse is pressed and draw_type
                             // is EDGE
     int draw_type;
+    bool left_button_pressed;
     const qreal diameter = 30;
     const qreal radius = 15;
 };

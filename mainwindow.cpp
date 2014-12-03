@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -60,5 +61,41 @@ void MainWindow::on_pushButton_3_clicked()
     reply = QMessageBox::question(this, "Editor", "Really clear all?",
                                   QMessageBox::Yes|QMessageBox::No);
     if (reply == QMessageBox::Yes)
+        ui->graphicsView->clearAll();
+}
+
+// Save
+void MainWindow::on_actionSave_triggered()
+{
+    fio.saveToFile();
+}
+
+// Load
+void MainWindow::on_actionLoad_triggered()
+{
+    fio.LoadFromFile();
+    if (fio.graphChanged())
+    {
         ui->graphicsView->clearView();
+        ui->graphicsView->redrawView();
+    }
+}
+
+void MainWindow::on_pushButton_4_clicked()
+{
+    if (glob_places.empty() || glob_edges.empty())
+    {
+        QMessageBox::information(0, "Simulator", "No graph to simulate on.");
+        return;
+    }
+
+    simdlg = new SimulationDialog(this);
+    simdlg->setWindowFlags(Qt::Window | Qt::WindowMinimizeButtonHint
+                           | Qt::WindowMaximizeButtonHint
+                           | Qt::WindowCloseButtonHint);
+    simdlg->exec();
+
+    delete simdlg;
+    ui->graphicsView->clearView();
+    ui->graphicsView->redrawView();
 }

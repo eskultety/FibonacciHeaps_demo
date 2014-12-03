@@ -3,6 +3,7 @@
 
 #include <QGraphicsEllipseItem>
 #include <QGraphicsTextItem>
+#include <QBrush>
 
 
 class gPlace
@@ -10,6 +11,7 @@ class gPlace
 public:
     gPlace();
     gPlace(unsigned m_ID);
+    ~gPlace();
 
     void setX(qreal m_X);
     void setY(qreal m_Y);
@@ -20,8 +22,11 @@ public:
     unsigned id();
 
     void setItem(QGraphicsEllipseItem *m_item);
+    void setBrushBlack();
+    void setBrushGray();
     void setText(QGraphicsTextItem *m_txt);
     QGraphicsEllipseItem *getItem();
+    QBrush &getBrush();
     QGraphicsTextItem *getText();
 
 private:
@@ -29,6 +34,7 @@ private:
     qreal X;
     qreal Y;
     QGraphicsEllipseItem *item;
+    QBrush brush;
     QGraphicsTextItem *txt;
     // ptr to FibbNode
 };

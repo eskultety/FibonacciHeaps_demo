@@ -1,7 +1,6 @@
 #include "mainwindow.h"
 #include <QApplication>
 #include <iostream>
-#include <unistd.h>
 #include <mutex>
 #include <thread>
 #include "gplace.h"
@@ -10,7 +9,6 @@
 
 void prim()
 {
-    sleep(5);
     std::cout << "Hello from prim()\n";
 }
 

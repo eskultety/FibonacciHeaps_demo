@@ -18,11 +18,16 @@ SOURCES += main.cpp\
         mainwindow.cpp \
     myqgraphicsview.cpp \
     gplace.cpp \
-    gedge.cpp
+    gedge.cpp \
+    xmlfileio.cpp \
+    simulationdialog.cpp
 
 HEADERS  += mainwindow.h \
     myqgraphicsview.h \
     gplace.h \
-    gedge.h
+    gedge.h \
+    xmlfileio.h \
+    simulationdialog.h
 
-FORMS    += mainwindow.ui
+FORMS    += mainwindow.ui \
+    simulationdialog.ui

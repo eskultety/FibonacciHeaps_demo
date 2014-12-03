@@ -21,6 +21,7 @@ MyQGraphicsView::MyQGraphicsView(QWidget *parent) :
     line = NULL;
     draw_type = NO_TYPE;
     drawing_edge = false;
+    left_button_pressed = false;
 }
 
 void MyQGraphicsView::setDrawType(int m_draw_type)
@@ -46,7 +47,7 @@ void MyQGraphicsView::makeItemsSelectable(bool is_selectable)
     }
 }
 
-void MyQGraphicsView::clearView()
+void MyQGraphicsView::clearAll()
 {
     scene->clear();
     glob_edges.clear();
@@ -54,10 +55,71 @@ void MyQGraphicsView::clearView()
     id = 0;
 }
 
+void MyQGraphicsView::clearView()
+{
+    scene->clear();
+    id = 0;
+}
+
+void MyQGraphicsView::redrawView()
+{
+    foreach (gPlace *p, glob_places)
+    {
+        if (id < p->id())
+            id = p->id() + 1;
+
+        QGraphicsTextItem *txt = new QGraphicsTextItem(0, scene);
+        txt->setFont(QFont("Helvetica", 12, QFont::Bold));
+        txt->setZValue(3);
+        txt->setPos(p->x(), p->y());
+        txt->setPlainText(QString::number(p->id()));
+        p->setText(txt);
+
+        QGraphicsEllipseItem *el = new QGraphicsEllipseItem(p->x(), p->y(),
+                                                            diameter, diameter,
+                                                            0, scene);
+        el->setPen(blackpen);
+        // makes places to be drawn on the top of edges
+        el->setZValue(2);
+        el->setBrush(QBrush(Qt::yellow));
+        p->setItem(el);
+    }
+
+    foreach (gEdge *e, glob_edges)
+    {
+        QLineF li(QPointF(e->getFrom()->x()+radius, e->getFrom()->y()+radius),
+                  QPointF(e->getTo()->x()+radius, e->getTo()->y()+radius));
+        line = new QGraphicsLineItem(li, 0, scene);
+        line->setPen(blackpen);
+        e->setItem(line);
+
+        QGraphicsTextItem *txt = new QGraphicsTextItem(0, scene);
+        txt->setDefaultTextColor(Qt::blue);
+        txt->setFont(QFont("Helvetica", 14, QFont::Bold));
+        txt->setZValue(3);
+        qreal x = e->getItem()->boundingRect().x()
+                  + (e->getItem()->boundingRect().width() / 2) - 5;
+        qreal y = e->getItem()->boundingRect().y()
+                  + (e->getItem()->boundingRect().height() / 2) - 8;
+        txt->setPos(x, y);
+        txt->setPlainText(QString::number(e->w()));
+        e->setText(txt);
+    }
+
+    edge_start_place = NULL;
+    line = NULL;
+    draw_type = NO_TYPE;
+    drawing_edge = false;
+    left_button_pressed = false;
+    makeItemsSelectable(true);
+}
+
 void MyQGraphicsView::mousePressEvent(QMouseEvent * e)
 {
     if (e->button() != Qt::LeftButton)
         QGraphicsView::mousePressEvent(e);
+
+    left_button_pressed = true;
 
     if (draw_type == NO_TYPE)
     {
@@ -67,12 +129,12 @@ void MyQGraphicsView::mousePressEvent(QMouseEvent * e)
     {
         QPointF pt = mapToScene(e->pos());
 
-        id++;
         gPlace *p = new gPlace(id);
         p->setX(pt.x() - radius);
         p->setY(pt.y() - radius);
 
         QGraphicsTextItem *txt = new QGraphicsTextItem(0, scene);
+        txt->setFont(QFont("Helvetica", 12, QFont::Bold));
         txt->setZValue(3);
         txt->setPos(p->x(), p->y());
         txt->setPlainText(QString::number(id));
@@ -87,6 +149,7 @@ void MyQGraphicsView::mousePressEvent(QMouseEvent * e)
         el->setBrush(QBrush(Qt::yellow));
         p->setItem(el);
         glob_places.push_back(p);
+        id++;
     }
     else    // draw_type == EDGE
     {
@@ -113,6 +176,11 @@ void MyQGraphicsView::mousePressEvent(QMouseEvent * e)
 
 void MyQGraphicsView::mouseReleaseEvent(QMouseEvent *e)
 {
+    if (e->button() != Qt::LeftButton)
+        QGraphicsView::mousePressEvent(e);
+
+    left_button_pressed = false;
+
     if (drawing_edge && line != NULL)
     {
         drawing_edge = false;
@@ -129,13 +197,21 @@ void MyQGraphicsView::mouseReleaseEvent(QMouseEvent *e)
                 scene->removeItem(line);
                 delete line;
 
+                QPointF pt(p->getItem()->boundingRect().x()+radius,
+                           p->getItem()->boundingRect().y()+radius);
+
+                // end place same as start place
+                if (pt == edge_start_point)
+                {
+                    edge_start_place = NULL;
+                    break;
+                }
+
                 // draw new line with the same end point coordinates
                 // as coordinates of center of the place which it belongs to
                 QLineF li(edge_start_point, edge_start_point);
                 line = new QGraphicsLineItem(li, 0, scene);
                 line->setPen(blackpen);
-                QPointF pt(p->getItem()->boundingRect().x()+radius,
-                           p->getItem()->boundingRect().y()+radius);
                 QLineF new_line(edge_start_point, pt);
                 line->setLine(new_line);
 
@@ -143,6 +219,20 @@ void MyQGraphicsView::mouseReleaseEvent(QMouseEvent *e)
                 ed->setItem(line);
                 ed->setFrom(edge_start_place);
                 ed->setTo(p);
+                ed->setW(QInputDialog::getInt(0, "Edge weight", "Weight:", 1));
+
+                QGraphicsTextItem *txt = new QGraphicsTextItem(0, scene);
+                txt->setDefaultTextColor(Qt::blue);
+                txt->setFont(QFont("Helvetica", 14, QFont::Bold));
+                txt->setZValue(3);
+                qreal x = ed->getItem()->boundingRect().x()
+                          + (ed->getItem()->boundingRect().width() / 2) - 5;
+                qreal y = ed->getItem()->boundingRect().y()
+                          + (ed->getItem()->boundingRect().height() / 2) - 8;
+                txt->setPos(x, y);
+                txt->setPlainText(QString::number(ed->w()));
+                ed->setText(txt);
+
                 glob_edges.push_back(ed);
                 break;
             }
@@ -166,7 +256,7 @@ void MyQGraphicsView::mouseMoveEvent(QMouseEvent *e)
     if (e->button() != Qt::LeftButton)
         QGraphicsView::mouseMoveEvent(e);
 
-    if (draw_type == EDGE)
+    if (draw_type == EDGE && left_button_pressed)
     {
         if (drawing_edge)
         {
@@ -208,6 +298,8 @@ void MyQGraphicsView::keyPressEvent(QKeyEvent *e)
                             if (ed->getFrom()->getItem() == el
                                 || ed->getTo()->getItem() == el)
                             {
+                                scene->removeItem(ed->getText());
+                                delete ed->getText();
                                 scene->removeItem(ed->getItem());
                                 delete ed->getItem();
                                 glob_edges.remove(ed);
@@ -235,6 +327,8 @@ void MyQGraphicsView::keyPressEvent(QKeyEvent *e)
                 {
                     if (ed->getItem() == li)
                     {
+                        scene->removeItem(ed->getText());
+                        delete ed->getText();
                         scene->removeItem(li);
                         delete li;
                         glob_edges.remove(ed);
