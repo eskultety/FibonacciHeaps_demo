@@ -1,5 +1,5 @@
-#ifndef __FIBONACCIHEAP_H__
-#define __FIBONACCIHEAP_H__
+#ifndef __FIBHEAP_H__
+#define __FIBHEAP_H__
 
 #include "internal.h"
 
@@ -30,8 +30,8 @@ class FibHeap
         int FibInsertNode(FibNodePtr node);
         FibNodePtr FibFindNode(unsigned id);
         FibNodePtr FibCreateNode(int key=INT_MIN);
-        friend FibHeapPtr 
+        friend FibHeapPtr
             FibUnion (FibHeap &h1, FibHeap &h2);
 };
 
-#endif
+#endif  // __FIBHEAP_H__

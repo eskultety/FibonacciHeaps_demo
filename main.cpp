@@ -5,7 +5,12 @@
 #include <thread>
 #include "gplace.h"
 #include "gedge.h"
+#include "Prim.h"
 
+
+bool pause_execution;
+unsigned char speed;
+std::mutex prim_mtx;
 
 void prim()
 {
