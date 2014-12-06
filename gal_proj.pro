@@ -30,7 +30,8 @@ HEADERS += mainwindow.h \
            simulationdialog.h \
            Prim.h \
            FibHeap.h \
-           internal.h
+           internal.h \
+           interface.h
 
 FORMS += mainwindow.ui \
          simulationdialog.ui
