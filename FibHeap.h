@@ -1,6 +1,9 @@
 #ifndef __FIBHEAP_H__
 #define __FIBHEAP_H__
 
+#include <exception>
+#include <string>
+#include <typeinfo>
 #include "internal.h"
 
 typedef class FibHeap *FibHeapPtr;
@@ -32,6 +35,18 @@ class FibHeap
         FibNodePtr FibCreateNode(int key=INT_MIN);
         friend FibHeapPtr
             FibUnion (FibHeap &h1, FibHeap &h2);
+
+        class FibException: public std::exception
+        {
+            private:
+                std::string msg;
+            public:
+                FibException(const std::string& message)
+                {
+                    msg = std::string("error: ") + message + "\n";
+                }
+                virtual const char* what() throw() { return msg.c_str(); }
+        };
 };
 
 #endif  // __FIBHEAP_H__
