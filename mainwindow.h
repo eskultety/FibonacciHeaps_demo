@@ -13,7 +13,7 @@
 
 int weight(unsigned u, unsigned v);
 void sigEvent(unsigned event);
-void simulation();
+void simulation(unsigned root);
 
 
 namespace Ui {
@@ -35,12 +35,14 @@ private slots:
     void on_actionSave_triggered();
     void on_actionLoad_triggered();
     void on_pushButton_4_clicked();
+    void setRoot(const QString &root);
 
 private:
     Ui::MainWindow *ui;
     MyQGraphicsView *view;
     XmlFileIO fio;
     SimulationDialog *simdlg;
+    unsigned root_id;
 
     bool place_button_checked;
     bool edge_button_checked;

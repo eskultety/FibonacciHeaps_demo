@@ -58,7 +58,7 @@ Prim::PrimMinSpanningTree(int (*weight)(unsigned u, unsigned v),
             sigEvent(SIG_PRIM_STEP_FINISHED);
             while (!ready)
                 cv.wait(u_lock);
-            if (terminate)
+            if (sim_terminate)
                 return 0;
             ready = false;
         #endif
@@ -72,7 +72,7 @@ Prim::PrimMinSpanningTree(int (*weight)(unsigned u, unsigned v),
         sigEvent(SIG_PRIM_STEP_FINISHED);
         while (!ready)
             cv.wait(u_lock);
-        if (terminate)
+        if (sim_terminate)
             return 0;
         ready = false;
     #endif
@@ -95,7 +95,7 @@ Prim::PrimMinSpanningTree(int (*weight)(unsigned u, unsigned v),
         sigEvent(SIG_PRIM_STEP_FINISHED);
         while (!ready)
             cv.wait(u_lock);
-        if (terminate)
+        if (sim_terminate)
             return 0;
         ready = false;
     #endif
@@ -116,7 +116,7 @@ Prim::PrimMinSpanningTree(int (*weight)(unsigned u, unsigned v),
             sigEvent(SIG_PRIM_STEP_FINISHED);
             while (!ready)
                 cv.wait(u_lock);
-            if (terminate)
+            if (sim_terminate)
                 return 0;
             ready = false;
         #endif
@@ -134,7 +134,7 @@ Prim::PrimMinSpanningTree(int (*weight)(unsigned u, unsigned v),
             sigEvent(SIG_PRIM_STEP_FINISHED);
             while (!ready)
                 cv.wait(u_lock);
-            if (terminate)
+            if (sim_terminate)
                 return 0;
             ready = false;
         #endif
@@ -154,7 +154,7 @@ Prim::PrimMinSpanningTree(int (*weight)(unsigned u, unsigned v),
                     sigEvent(SIG_PRIM_STEP_FINISHED);
                     while (!ready)
                         cv.wait(u_lock);
-                    if (terminate)
+                    if (sim_terminate)
                         return 0;
                     ready = false;
                 #endif
@@ -168,7 +168,7 @@ Prim::PrimMinSpanningTree(int (*weight)(unsigned u, unsigned v),
                     sigEvent(SIG_PRIM_STEP_FINISHED);
                     while (!ready)
                         cv.wait(u_lock);
-                    if (terminate)
+                    if (sim_terminate)
                         return 0;
                     ready = false;
                 #endif

@@ -31,31 +31,65 @@
      <property name="title">
       <string/>
      </property>
-     <widget class="QPushButton" name="pushButton">
+     <widget class="QWidget" name="layoutWidget">
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>14</y>
-        <width>75</width>
-        <height>23</height>
+        <y>10</y>
+        <width>83</width>
+        <height>201</height>
        </rect>
       </property>
-      <property name="text">
-       <string>Run</string>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="pushButton_2">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>47</y>
-        <width>75</width>
-        <height>23</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Step</string>
-      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_3">
+       <item>
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>Simulation Speed</string>
+         </property>
+        </widget>
+       </item>
+       <item alignment="Qt::AlignHCenter">
+        <widget class="QLabel" name="label_3">
+         <property name="text">
+          <string>8x</string>
+         </property>
+        </widget>
+       </item>
+       <item alignment="Qt::AlignHCenter">
+        <widget class="QSlider" name="verticalSlider">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="tickPosition">
+          <enum>QSlider::TicksBothSides</enum>
+         </property>
+         <property name="tickInterval">
+          <number>4</number>
+         </property>
+        </widget>
+       </item>
+       <item alignment="Qt::AlignHCenter">
+        <widget class="QLabel" name="label_2">
+         <property name="text">
+          <string>1x</string>
+         </property>
+        </widget>
+       </item>
+       <item alignment="Qt::AlignHCenter">
+        <widget class="QPushButton" name="pushButton">
+         <property name="text">
+          <string>Run</string>
+         </property>
+        </widget>
+       </item>
+       <item alignment="Qt::AlignHCenter">
+        <widget class="QPushButton" name="pushButton_2">
+         <property name="text">
+          <string>Step</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </widget>
     </widget>
    </item>

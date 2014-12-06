@@ -38,7 +38,6 @@ private:
     int W;
     class gPlace *from;
     class gPlace *to;
-    // ptr to FibbNode
 };
 
 

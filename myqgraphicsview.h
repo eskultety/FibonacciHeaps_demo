@@ -9,6 +9,8 @@
 #include <QGraphicsLineItem>
 #include <QPointF>
 #include <QInputDialog>
+#include "interface.h"
+#include "Prim.h"
 #include "gplace.h"
 #include "gedge.h"
 

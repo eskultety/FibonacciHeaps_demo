@@ -1,12 +1,15 @@
 #include "gplace.h"
 
+
 std::list<gPlace*> glob_places;
+
 
 gPlace::gPlace()
 {
     item = NULL;
     txt = NULL;
     brush = QBrush(Qt::yellow);
+    node = NULL;
 }
 
 gPlace::gPlace(unsigned m_ID)
@@ -15,6 +18,7 @@ gPlace::gPlace(unsigned m_ID)
     item = NULL;
     txt = NULL;
     brush = QBrush(Qt::yellow);
+    node = NULL;
 }
 
 gPlace::~gPlace()
@@ -86,4 +90,14 @@ QBrush &gPlace::getBrush()
 QGraphicsTextItem *gPlace::getText()
 {
     return txt;
+}
+
+void gPlace::setFibNode(FibNodePtr m_node)
+{
+    node = m_node;
+}
+
+FibNodePtr gPlace::getFibNode()
+{
+    return node;
 }

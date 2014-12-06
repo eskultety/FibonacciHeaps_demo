@@ -65,7 +65,7 @@ void MyQGraphicsView::redrawView()
 {
     foreach (gPlace *p, glob_places)
     {
-        if (id < p->id())
+        if (id <= p->id())
             id = p->id() + 1;
 
         QGraphicsTextItem *txt = new QGraphicsTextItem(0, scene);
@@ -202,6 +202,33 @@ void MyQGraphicsView::mouseReleaseEvent(QMouseEvent *e)
 
                 // end place same as start place
                 if (pt == edge_start_point)
+                {
+                    edge_start_place = NULL;
+                    break;
+                }
+
+                // check if edge doesn't already exist
+                bool exist = false;
+                foreach (gEdge *e, glob_edges)
+                {
+                    if (edge_start_place == e->getFrom())
+                    {
+                        if (p == e->getTo())
+                        {
+                            exist = true;
+                            break;
+                        }
+                    }
+                    if (edge_start_place == e->getTo())
+                    {
+                        if (p == e->getFrom())
+                        {
+                            exist = true;
+                            break;
+                        }
+                    }
+                }
+                if (exist)
                 {
                     edge_start_place = NULL;
                     break;

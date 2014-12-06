@@ -7,6 +7,7 @@
 #include <QGraphicsLineItem>
 #include <QPointF>
 #include <QMessageBox>
+#include <cmath>
 #include "interface.h"
 #include "Prim.h"
 #include "primsignal.h"
@@ -31,10 +32,13 @@ private slots:
     void on_pushButton_2_clicked();
     void sig_backend(unsigned event);
 
+    void on_verticalSlider_valueChanged(int value);
+
 private:
     Prim *prim;
     PrimSignal *psignal;
     bool running;
+    bool step_in_progress;
 
     void drawGraph();
 

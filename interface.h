@@ -16,7 +16,7 @@
 extern unsigned char speed; // algorithm speed limiter
 extern std::condition_variable cv;
 extern bool ready;  // signalizes if GUI ready for next update
-extern bool terminate;
+extern bool sim_terminate;
 extern bool pause_execution; // if we want to step the execution
 extern std::mutex shared_mtx;   // protects GUI speed settings
 extern std::mutex uni_mtx;  // used to acquire lock on conditional variable

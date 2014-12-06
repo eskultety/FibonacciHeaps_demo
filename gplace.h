@@ -4,6 +4,7 @@
 #include <QGraphicsEllipseItem>
 #include <QGraphicsTextItem>
 #include <QBrush>
+#include "internal.h"
 
 
 class gPlace
@@ -29,6 +30,9 @@ public:
     QBrush &getBrush();
     QGraphicsTextItem *getText();
 
+    void setFibNode(FibNodePtr m_node);
+    FibNodePtr getFibNode();
+
 private:
     unsigned ID;
     qreal X;
@@ -36,7 +40,7 @@ private:
     QGraphicsEllipseItem *item;
     QBrush brush;
     QGraphicsTextItem *txt;
-    // ptr to FibbNode
+    FibNodePtr node;
 };
 
 

@@ -7,10 +7,10 @@
 #include "Prim.h"
 
 
-bool pause_execution;
+bool pause_execution = true;
 bool ready;
-bool terminate;
-unsigned char speed;
+bool sim_terminate;
+unsigned char speed = 1;
 std::mutex shared_mtx;
 std::mutex uni_mtx;
 std::condition_variable cv;

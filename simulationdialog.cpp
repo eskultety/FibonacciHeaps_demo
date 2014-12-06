@@ -10,6 +10,7 @@ SimulationDialog::SimulationDialog(Prim *m_prim, PrimSignal *m_psignal,
     prim = m_prim;
     psignal = m_psignal;
     running = false;
+    step_in_progress = false;
     connect(psignal, SIGNAL(sig(unsigned)), this, SLOT(sig_backend(unsigned)));
 
     ui->setupUi(this);
@@ -25,6 +26,10 @@ SimulationDialog::SimulationDialog(Prim *m_prim, PrimSignal *m_psignal,
 
     drawGraph();
 
+    ui->verticalSlider->setTickInterval(1);
+    ui->verticalSlider->setRange(0, 3);
+    ui->verticalSlider->setValue(0);
+
     ui->textEdit->setReadOnly(true);
     ui->textEdit->setCurrentFont(QFont("Courier", 10));
     initPrimCode();
@@ -39,21 +44,53 @@ SimulationDialog::~SimulationDialog()
 // Run simulation
 void SimulationDialog::on_pushButton_clicked()
 {
-    //ready = true;
-    //cv.notify_one();
+    if (running || step_in_progress)
+        return;
+
+    ui->verticalSlider->setEnabled(false);
+
+    shared_mtx.lock();
+    pause_execution = true;
+    shared_mtx.unlock();
+
+    running = true;
+
+    while (!prim->getPrimStatus())
+    {
+        ready = true;
+        cv.notify_one();
+    }
+
+    running = false;
+    ui->verticalSlider->setEnabled(true);
+
+    QMessageBox::information(0, "Simulator", "Simulation finished.");
+
+    qDebug() << "Min.: " << prim->getPrimMSTCost();
 }
 
 // Step forward
 void SimulationDialog::on_pushButton_2_clicked()
 {
-    if (running)
+    if (running || step_in_progress)
         return;
 
+    if (prim->getPrimStatus())
+    {
+        QMessageBox::information(0, "Simulator", "Simulation finished.");
+        return;
+    }
+
+    shared_mtx.lock();
+    pause_execution = false;
+    shared_mtx.unlock();
+
     ready = true;
-    running = true;
+    step_in_progress = true;
     cv.notify_one();
 
-    // pokus /////////////
+    /*
+    ///////////////
     gEdge *e = glob_edges.front();
     e->setPenRed();
     gPlace *p =glob_places.front();
@@ -62,11 +99,12 @@ void SimulationDialog::on_pushButton_2_clicked()
 
     printPrim();
     drawGraph();
+    */
 }
 
 void SimulationDialog::sig_backend(unsigned event)
 {
-    qDebug() << "simulujem.";
+    qDebug() << "SIGNAL number: " << event;
     switch (event)
     {
         case SIG_PRIM_STEP_FINISHED:
@@ -75,7 +113,7 @@ void SimulationDialog::sig_backend(unsigned event)
             break;
         case SIG_ERROR:
             QMessageBox::information(0, "Simulator", "Simulation error!");
-            terminate = true;
+            sim_terminate = true;
             ready = true;
             cv.notify_one();
             this->close();
@@ -84,7 +122,7 @@ void SimulationDialog::sig_backend(unsigned event)
             break;
     }
 
-    running = false;
+    step_in_progress = false;
 }
 
 void SimulationDialog::drawGraph()
@@ -173,4 +211,11 @@ void SimulationDialog::printPrim()
             ui->textEdit->append(str);
         }
     }
+}
+
+void SimulationDialog::on_verticalSlider_valueChanged(int value)
+{
+    shared_mtx.lock();
+    speed = pow(2, value);
+    shared_mtx.unlock();
 }
