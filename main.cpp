@@ -10,7 +10,8 @@
 
 bool pause_execution;
 unsigned char speed;
-std::mutex prim_mtx;
+std::mutex shared_mtx;
+std::mutex uni_mtx;
 
 void prim()
 {
