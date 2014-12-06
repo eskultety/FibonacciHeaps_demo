@@ -28,8 +28,28 @@ Prim::PrimMinSpanningTree(int (*weight)(unsigned u, unsigned v),
     FibNodePtr v = nullptr;
     vector<FibNodePtr> pi(this->adj.size(), NULL);   // predecessor array
 
+    if (!this->adj.size()) {
+        throw PrimException(fmtError("failed to find minimum spanning tree:"
+                                     " no vertices given"));
+        goto cleanup;
+    }
+    if (!this->edges.size()) {
+        throw PrimException(fmtError("failed to find minimum spanning tree:"
+                                     " no edges given"));
+        goto cleanup;
+    }
+    if (!this->adj[root][0]) {
+        char buf[100];
+        sprintf(buf,"failed to minimum spannig tree: root '%d' does not"
+                " exist", root);
+        throw PrimException(fmtError(buf));
+        goto cleanup;
+    }
+
     /* properly initialize Fibonacci heap */
     for (i = 0; i < this->adj.size(); i++) {
+        if (!this->adj[i][0])
+            continue;
         this->adj[i][0]->key = INT_MAX;
         pi[this->adj[i][0]->id] = NULL;
         #ifdef WITH_GUI // finished init
@@ -59,7 +79,9 @@ Prim::PrimMinSpanningTree(int (*weight)(unsigned u, unsigned v),
 
     /* Q <-- V */
     for (i = 0; i < this->adj.size(); i++) {
-        if (fib_heap->FibInsertNode(adj[i][0]) < 0) {
+        if (!this->adj[i][0])
+            continue;
+        if (fib_heap->FibInsertNode(this->adj[i][0]) < 0) {
             char buf[100];
             sprintf(buf, "failed to insert node %d into fibonacci heap",
                     adj[i][0]->id);
@@ -156,6 +178,7 @@ Prim::PrimMinSpanningTree(int (*weight)(unsigned u, unsigned v),
 
     ret = 0;
  cleanup:
+    this->status_finished = true;
     return ret;
 }
 
@@ -181,12 +204,30 @@ Prim::~Prim()
 }
 
 FibNodePtr
-Prim::PrimAddVertex()
+Prim::PrimAddVertex(unsigned id)
 {
-    FibNodePtr node = fib_heap->FibCreateNode();
+    FibNodePtr node = nullptr;
+    if (id == UINT_MAX)
+        node = fib_heap->FibCreateNode();
+    else
+        node = fib_heap->FibCreateNode(id);
     if (node) {
+        /* if for some reason user randomly chooses ID, we fill the Nodeset
+         * with blanks
+         */
+        if (id > this->next_id) {
+            for (unsigned i = 0; i < id - this->next_id; i++, this->next_id++) {
+                this->adj.push_back(AdjNodeEdges());
+                this->adj[this->next_id].push_back(nullptr);
+            }
+        } else if (id < this->next_id) {
+            this->adj[id][0] = node;
+            return node;
+        }
+
         this->adj.push_back(AdjNodeEdges());
         this->adj[node->id].push_back(node);
+        this->next_id = id + 1;
     }
 
     return node;
@@ -195,7 +236,8 @@ Prim::PrimAddVertex()
 int
 Prim::PrimAddEdge(unsigned u, unsigned v)
 {
-    if (u >= adj.size() || v >= adj.size()) {
+
+    if (u >= this->next_id || v >= this->next_id) {
         char buf[100];
         sprintf(buf, "failed to insert edge (%d,%d): invalid edge", u,v);
         throw PrimException(fmtError(buf));
