@@ -11,15 +11,19 @@ class Prim {
         EdgeSet min_spanning_tree;
         FibHeapPtr fib_heap;
         int mst_cost = 0;
+        unsigned next_id = 0;
+        bool status_finished = false;
     public:
         Prim();
         ~Prim();
         static const int random[5][5];
-        FibNodePtr PrimAddVertex();
+        FibNodePtr PrimAddVertex(unsigned id=UINT_MAX);
         int PrimAddEdge(unsigned u, unsigned v);
         int PrimMinSpanningTree(int (*weight)(unsigned u, unsigned v),
                                 unsigned root);
         int getPrimMSTCost(void) { return mst_cost; }
+        EdgeSet& getPrimMST(void) { return min_spanning_tree; }
+        bool getPrimStatus(void) { return status_finished; }
 
         class PrimException: public std::exception
         {
