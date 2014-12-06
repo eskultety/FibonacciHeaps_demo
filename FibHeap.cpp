@@ -3,6 +3,10 @@
 #include <string>
 #include "FibHeap.h"
 
+#ifdef WITH_GUI
+#include "interface.h"
+#endif
+
 #define SWAP(x, y) _swap(&x, &y)
 
 using namespace std;
@@ -16,8 +20,6 @@ static void _swap (T *a, T *b)
     *a = *b;
     *b = tmp;
 }
-
-
 
 static unsigned id = 0;
 
@@ -67,6 +69,8 @@ FibHeap::FibInsertNode(FibNodePtr node)
     }
 
     this->numNodes++;
+    #ifdef WITH_GUI
+    #endif
     return 0;
 }
 
@@ -121,6 +125,8 @@ FibHeap::FibExtractMin()
         this->numNodes--;
     }
 
+    #ifdef WITH_GUI
+    #endif
     return heap_min;
 }
 
@@ -193,6 +199,8 @@ FibHeap::FibConsolidate()
                     this->min = ax_array[i];
             }
         }
+        #ifdef WITH_GUI
+        #endif
     }
 
     return 0;
@@ -225,6 +233,8 @@ FibHeap::FibHeapLink(FibNodePtr y, FibNodePtr x)
     x->degree++;
     y->mark = false;
 
+    #ifdef WITH_GUI
+    #endif
     return 0;
 }
 
@@ -257,6 +267,8 @@ FibHeap::FibDecreaseKey(FibNodePtr x, int key)
     if (x->key < heap_min->key)
         this->min = x;
 
+    #ifdef WITH_GUI
+    #endif
     ret = 0;
  error:
     return ret;
@@ -284,6 +296,8 @@ FibHeap::FibCut(FibNodePtr x, FibNodePtr y)
     x->parent = nullptr;
     x->mark = false;
 
+    #ifdef WITH_GUI
+    #endif
     return 0;
 }
 
@@ -302,6 +316,8 @@ FibHeap::FibCascadingCut(FibNodePtr y)
         this->FibCascadingCut(ptr);
     }
 
+    #ifdef WITH_GUI
+    #endif
     return 0;
 }
 
