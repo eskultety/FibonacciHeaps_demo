@@ -7,6 +7,7 @@
 class Prim {
     private:
         AdjList adj;
+        EdgeSet edges;
         EdgeSet min_spanning_tree;
         FibHeapPtr fib_heap;
         int mst_cost = 0;
@@ -19,6 +20,18 @@ class Prim {
         int PrimMinSpanningTree(int (*weight)(unsigned u, unsigned v),
                                 unsigned root);
         int getPrimMSTCost(void) { return mst_cost; }
+
+        class PrimException: public std::exception
+        {
+            private:
+                std::string msg;
+            public:
+                PrimException(const std::string& message)
+                {
+                    msg = std::string("error: ") + message + "\n";
+                }
+                virtual const char* what() const throw() { return msg.c_str(); }
+        };
 };
 
 #endif  // __PRIM_H__
