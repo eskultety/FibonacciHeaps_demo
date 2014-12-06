@@ -21,13 +21,6 @@ typedef std::vector<std::tuple<int, int>> EdgeSet;   // min spanning tree
 typedef std::vector<FibNodePtr> AdjNodeEdges;
 typedef std::vector<AdjNodeEdges> AdjList;    // adjacency list
 
-#ifdef WITH_GUI
-extern unsigned char speed; // algorithm speed limiter
-extern bool pause_execution; // if we want to step the execution
-extern std::mutex shared_mtx;   // protects GUI speed settings
-extern std::mutx uni_mtx;  // used to acquire lock on conditional variable
-#endif // WITH_GUI
-
 struct FibNode {
     unsigned id;
     FibNodePtr parent;
