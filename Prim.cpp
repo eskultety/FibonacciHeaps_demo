@@ -38,7 +38,7 @@ Prim::PrimMinSpanningTree(int (*weight)(unsigned u, unsigned v),
                                      " no edges given"));
         goto cleanup;
     }
-    if (!this->adj[root][0]) {
+    if (root >= this->adj.size() || !this->adj[root][0]) {
         char buf[100];
         sprintf(buf,"failed to minimum spannig tree: root '%d' does not"
                 " exist", root);
