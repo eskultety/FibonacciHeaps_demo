@@ -5,20 +5,10 @@
 #include <cstdio>
 #include "Prim.h"
 #include "FibHeap.h"
-#include "interface.h"
 
 #ifdef WITH_GUI
-    #define MILLISEC 1000 // 1 second
-    #define MUTEX_AC(s, p) _mutexAcquire(&s, &p);
-
-    static inline void _mutexAcquire(unsigned char *s, bool *p)
-    {
-        shared_mtx.lock();
-            *s = speed;
-            *p = pause_execution;
-        shared_mtx.unlock();
-    }
-#endif  // WITH_GUI
+#include "interface.h"
+#endif
 
 using namespace std;
 
@@ -29,7 +19,6 @@ Prim::PrimMinSpanningTree(int (*weight)(unsigned u, unsigned v),
     #ifdef WITH_GUI
     bool pause;
     unsigned char sp;
-    unique_lock<mutex> u_lock(uni_mtx);
     #endif
 
     int ret = -1;
