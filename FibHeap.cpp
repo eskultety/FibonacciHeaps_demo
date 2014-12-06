@@ -1,8 +1,23 @@
 #include <iostream>
 #include <cmath>
+#include <string>
 #include "FibHeap.h"
 
+#define SWAP(x, y) _swap(&x, &y)
+
 using namespace std;
+
+template <typename T>
+static void _swap (T *a, T *b)
+{
+    if (*a == *b)
+        return;
+    T tmp = *a;
+    *a = *b;
+    *b = tmp;
+}
+
+
 
 static unsigned id = 0;
 
@@ -219,14 +234,16 @@ FibHeap::FibDecreaseKey(FibNodePtr x, int key)
     FibNodePtr heap_min = this->min;
     FibNodePtr y = nullptr;
     int ret = -1;
+    char buf[100] = {0};
 
     if (!x) {
-        cerr << "cannot find node\n" << endl;
+        sprintf(buf,"node %d does not exist", x->id);
+        throw FibException(fmtError(buf));
         goto error;
     }
 
     if (key > x->key) {
-        cerr << "new key is greater than current key" << endl;
+        throw FibException(fmtError("key is greater than current key"));
         goto error;
     }
 
@@ -291,15 +308,15 @@ FibHeap::FibCascadingCut(FibNodePtr y)
 int
 FibHeap::FibDeleteNode(FibNodePtr node)
 {
-    FibNodePtr retnode = nullptr;/////////////////////////////
+    FibNodePtr retnode = nullptr;
     int ret = -1;
     if ((ret = this->FibDecreaseKey(node, INT_MIN)) < 0) {
-        cerr << "Delete: cannot decreasekey\n";/////////////////////
+        throw FibException(fmtError("failed to decrease key"));
         goto cleanup;
     }
 
     if (!(retnode = this->FibExtractMin())) {
-        cerr << "Delete: cannot extract min\n";///////////////////////
+        throw FibException(fmtError("failed to extract minimal node"));
         goto cleanup;
     }
 
@@ -348,8 +365,10 @@ FibUnion(FibHeap &heap1, FibHeap &heap2) {
     FibNodePtr tmp = nullptr;
 
     heap_ptr = new(nothrow) FibHeap;
-    if (!heap_ptr)
+    if (!heap_ptr) {
+        throw FibHeap::FibException(fmtError("failed to allocate Fibonacci heap"));
         goto cleanup;
+    }
 
     heap_ptr->min = h_min1;
     h_min = heap_ptr->min;
