@@ -16,7 +16,6 @@ class Prim {
     public:
         Prim();
         ~Prim();
-        static const int random[5][5];
         FibNodePtr PrimAddVertex(unsigned id=UINT_MAX);
         int PrimAddEdge(unsigned u, unsigned v);
         int PrimMinSpanningTree(int (*weight)(unsigned u, unsigned v),

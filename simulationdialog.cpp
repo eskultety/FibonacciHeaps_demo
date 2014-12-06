@@ -50,7 +50,7 @@ void SimulationDialog::on_pushButton_clicked()
     ui->verticalSlider->setEnabled(false);
 
     shared_mtx.lock();
-    pause_execution = true;
+        mode = RUN;
     shared_mtx.unlock();
 
     running = true;
@@ -82,7 +82,7 @@ void SimulationDialog::on_pushButton_2_clicked()
     }
 
     shared_mtx.lock();
-    pause_execution = false;
+        mode = STEP;
     shared_mtx.unlock();
 
     ready = true;

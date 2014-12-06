@@ -17,7 +17,7 @@ Prim::PrimMinSpanningTree(int (*weight)(unsigned u, unsigned v),
                           unsigned root)
 {
     #ifdef WITH_GUI
-    bool pause;
+    runMode run_mode;
     unsigned char sp;
     #endif
 
@@ -54,7 +54,8 @@ Prim::PrimMinSpanningTree(int (*weight)(unsigned u, unsigned v),
         pi[this->adj[i][0]->id] = NULL;
         #ifdef WITH_GUI // finished init
             MUTEX_AC(sp, pause);
-            this_thread::sleep_for(chrono::milliseconds(MILLISEC / sp));
+            if (run_mode == RUN)
+                this_thread::sleep_for(chrono::milliseconds(MILLISEC / sp));
             sigEvent(SIG_PRIM_STEP_FINISHED);
             while (!ready)
                 cv.wait(u_lock);
@@ -68,7 +69,8 @@ Prim::PrimMinSpanningTree(int (*weight)(unsigned u, unsigned v),
     this->adj[root][0]->key = 0;
     #ifdef WITH_GUI // finished r.key = 0
         MUTEX_AC(sp, pause);
-        this_thread::sleep_for(chrono::milliseconds(MILLISEC / sp));
+        if (run_mode == RUN)
+            this_thread::sleep_for(chrono::milliseconds(MILLISEC / sp));
         sigEvent(SIG_PRIM_STEP_FINISHED);
         while (!ready)
             cv.wait(u_lock);
@@ -91,7 +93,8 @@ Prim::PrimMinSpanningTree(int (*weight)(unsigned u, unsigned v),
     }
     #ifdef WITH_GUI // finished Q <-- V
         MUTEX_AC(sp, pause);
-        this_thread::sleep_for(chrono::milliseconds(MILLISEC / sp));
+        if (run_mode == RUN)
+            this_thread::sleep_for(chrono::milliseconds(MILLISEC / sp));
         sigEvent(SIG_PRIM_STEP_FINISHED);
         while (!ready)
             cv.wait(u_lock);
@@ -112,7 +115,8 @@ Prim::PrimMinSpanningTree(int (*weight)(unsigned u, unsigned v),
         }
         #ifdef WITH_GUI // finished Extract_miin(Q)
             MUTEX_AC(sp, pause);
-            this_thread::sleep_for(chrono::milliseconds(MILLISEC / sp));
+            if (run_mode == RUN)
+                this_thread::sleep_for(chrono::milliseconds(MILLISEC / sp));
             sigEvent(SIG_PRIM_STEP_FINISHED);
             while (!ready)
                 cv.wait(u_lock);
@@ -130,7 +134,8 @@ Prim::PrimMinSpanningTree(int (*weight)(unsigned u, unsigned v),
         }
         #ifdef WITH_GUI // finished A U (u, pi[u])
             MUTEX_AC(sp, pause);
-            this_thread::sleep_for(chrono::milliseconds(MILLISEC / sp));
+            if (run_mode == RUN)
+                this_thread::sleep_for(chrono::milliseconds(MILLISEC / sp));
             sigEvent(SIG_PRIM_STEP_FINISHED);
             while (!ready)
                 cv.wait(u_lock);
@@ -150,7 +155,8 @@ Prim::PrimMinSpanningTree(int (*weight)(unsigned u, unsigned v),
                  (w = weight(uid, vid)) < v->key) {
                 #ifdef WITH_GUI // finished if condition
                     MUTEX_AC(sp, pause);
-                    this_thread::sleep_for(chrono::milliseconds(MILLISEC / sp));
+                    if (run_mode == RUN)
+                        this_thread::sleep_for(chrono::milliseconds(MILLISEC / sp));
                     sigEvent(SIG_PRIM_STEP_FINISHED);
                     while (!ready)
                         cv.wait(u_lock);
@@ -164,7 +170,8 @@ Prim::PrimMinSpanningTree(int (*weight)(unsigned u, unsigned v),
                 fib_heap->FibDecreaseKey(v, w);
                 #ifdef WITH_GUI // finished assignements
                     MUTEX_AC(sp, pause);
-                    this_thread::sleep_for(chrono::milliseconds(MILLISEC / sp));
+                    if (run_mode == RUN)
+                        this_thread::sleep_for(chrono::milliseconds(MILLISEC / sp));
                     sigEvent(SIG_PRIM_STEP_FINISHED);
                     while (!ready)
                         cv.wait(u_lock);
@@ -179,7 +186,9 @@ Prim::PrimMinSpanningTree(int (*weight)(unsigned u, unsigned v),
     ret = 0;
  cleanup:
     this->status_finished = true;
-    sigEvent(SIG_FINISHED_ALL);
+    #ifdef WITH_GUI
+        sigEvent(SIG_FINISHED_ALL);
+    #endif
     return ret;
 }
 
