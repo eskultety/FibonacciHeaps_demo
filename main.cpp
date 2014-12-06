@@ -7,7 +7,7 @@
 #include "Prim.h"
 
 
-bool pause_execution = true;
+runMode mode = RUN;
 bool ready;
 bool sim_terminate;
 unsigned char speed = 1;
