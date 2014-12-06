@@ -2,6 +2,43 @@
 #include "ui_mainwindow.h"
 
 
+Prim prim;
+PrimSignal psignal;
+
+int weight(unsigned u, unsigned v)
+{
+    foreach (gEdge *e, glob_edges)
+    {
+        if (e->getFrom()->id() == u || e->getTo()->id() == u)
+        {
+            if (e->getFrom()->id() == v || e->getTo()->id() == v)
+                return e->w();
+        }
+    }
+
+    return -1;
+}
+
+void sigEvent(unsigned event)
+{
+    psignal.qSigEvent(event);
+}
+
+void simulation()
+{
+    while (!ready)
+        cv.wait(u_lock);
+    if (terminate)
+        return;
+    try {
+        prim.PrimMinSpanningTree(weight, 0);
+    } catch (Prim::PrimException& e) {
+        std::cerr << e.what();
+        sigEvent(SIG_ERROR);
+    }
+}
+
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -89,11 +126,19 @@ void MainWindow::on_pushButton_4_clicked()
         return;
     }
 
-    simdlg = new SimulationDialog(this);
+    std::thread Simulation(simulation);
+
+    simdlg = new SimulationDialog(&prim, &psignal, this);
     simdlg->setWindowFlags(Qt::Window | Qt::WindowMinimizeButtonHint
                            | Qt::WindowMaximizeButtonHint
                            | Qt::WindowCloseButtonHint);
     simdlg->exec();
+
+    terminate = true;
+    ready = true;
+    cv.notify_one();
+
+    Simulation.join();
 
     delete simdlg;
     ui->graphicsView->clearView();

@@ -1,11 +1,17 @@
 #include "simulationdialog.h"
 #include "ui_simulationdialog.h"
 
+#include <QDebug>
 
-SimulationDialog::SimulationDialog(QWidget *parent) :
-    QDialog(parent),
-    ui(new Ui::SimulationDialog)
+
+SimulationDialog::SimulationDialog(Prim *m_prim, PrimSignal *m_psignal,
+    QWidget *parent) : QDialog(parent), ui(new Ui::SimulationDialog)
 {
+    prim = m_prim;
+    psignal = m_psignal;
+    running = false;
+    connect(psignal, SIGNAL(sig(unsigned)), this, SLOT(sig_backend(unsigned)));
+
     ui->setupUi(this);
 
     scene = new QGraphicsScene();
@@ -33,12 +39,19 @@ SimulationDialog::~SimulationDialog()
 // Run simulation
 void SimulationDialog::on_pushButton_clicked()
 {
+    //ready = true;
+    //cv.notify_one();
 }
 
 // Step forward
 void SimulationDialog::on_pushButton_2_clicked()
 {
-    // recolor graph
+    if (running)
+        return;
+
+    ready = true;
+    running = true;
+    cv.notify_one();
 
     // pokus /////////////
     gEdge *e = glob_edges.front();
@@ -49,6 +62,29 @@ void SimulationDialog::on_pushButton_2_clicked()
 
     printPrim();
     drawGraph();
+}
+
+void SimulationDialog::sig_backend(unsigned event)
+{
+    qDebug() << "simulujem.";
+    switch (event)
+    {
+        case SIG_PRIM_STEP_FINISHED:
+            break;
+        case SIG_FIB_STEP_FINISHED:
+            break;
+        case SIG_ERROR:
+            QMessageBox::information(0, "Simulator", "Simulation error!");
+            terminate = true;
+            ready = true;
+            cv.notify_one();
+            this->close();
+            break;
+        default:
+            break;
+    }
+
+    running = false;
 }
 
 void SimulationDialog::drawGraph()

@@ -6,6 +6,10 @@
 #include <QGraphicsEllipseItem>
 #include <QGraphicsLineItem>
 #include <QPointF>
+#include <QMessageBox>
+#include "interface.h"
+#include "Prim.h"
+#include "primsignal.h"
 #include "gplace.h"
 #include "gedge.h"
 
@@ -18,14 +22,20 @@ class SimulationDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit SimulationDialog(QWidget *parent = 0);
+    explicit SimulationDialog(Prim *m_prim, PrimSignal *m_psignal,
+                              QWidget *parent = 0);
     ~SimulationDialog();
 
 private slots:
     void on_pushButton_clicked();
     void on_pushButton_2_clicked();
+    void sig_backend(unsigned event);
 
 private:
+    Prim *prim;
+    PrimSignal *psignal;
+    bool running;
+
     void drawGraph();
 
     QStringList prim_code;

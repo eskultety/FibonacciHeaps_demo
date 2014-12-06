@@ -20,7 +20,8 @@ SOURCES += main.cpp \
            xmlfileio.cpp \
            simulationdialog.cpp \
            Prim.cpp \
-           FibHeap.cpp
+           FibHeap.cpp \
+    primsignal.cpp
 
 HEADERS += mainwindow.h \
            myqgraphicsview.h \
@@ -31,7 +32,8 @@ HEADERS += mainwindow.h \
            Prim.h \
            FibHeap.h \
            internal.h \
-           interface.h
+           interface.h \
+    primsignal.h
 
 FORMS += mainwindow.ui \
          simulationdialog.ui
