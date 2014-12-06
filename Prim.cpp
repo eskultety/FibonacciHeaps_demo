@@ -168,7 +168,9 @@ int
 Prim::PrimAddEdge(unsigned u, unsigned v)
 {
     if (u >= adj.size() || v >= adj.size()) {
-        throw PrimException(fmtError("failed to insert edge: invalid edge"));
+        char buf[100];
+        sprintf(buf, "failed to insert edge (%d,%d): invalid edge", u,v);
+        throw PrimException(fmtError(buf));
         return -1;
     }
 
@@ -179,8 +181,11 @@ Prim::PrimAddEdge(unsigned u, unsigned v)
         unsigned my_u, my_v;
         tie(my_u, my_v) = *it;  /* untie edge to separate nodes */
         if ((my_u == u && my_v == v) || (my_u == v && my_v == u)) {
-            throw PrimException(fmtError("failed to insert edge: edge already"
-                                         " exists"));
+            char buf [100];
+            sprintf(buf,
+                    "failed to insert edge (%d,%d): edge already exists",
+                    u,v);
+            throw PrimException(fmtError(buf));
             return -1;
         }
     }
