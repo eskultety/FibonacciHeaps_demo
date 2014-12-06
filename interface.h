@@ -11,7 +11,7 @@
 #define SIG_PRIM_STEP_FINISHED  0
 #define SIG_FIB_STEP_FINISHED   1
 #define SIG_ERROR               2
-#define SIG_LAST                3
+#define SIG_FINISHED_ALL        3
 
 extern unsigned char speed; // algorithm speed limiter
 extern std::condition_variable cv;

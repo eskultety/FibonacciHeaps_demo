@@ -179,6 +179,7 @@ Prim::PrimMinSpanningTree(int (*weight)(unsigned u, unsigned v),
     ret = 0;
  cleanup:
     this->status_finished = true;
+    sigEvent(SIG_FINISHED_ALL);
     return ret;
 }
 
