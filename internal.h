@@ -5,15 +5,15 @@
 #include <vector>
 #include <tuple>
 #include <mutex>
-#define SWAP(x, y) _swap(&x, &y)
+#include <cstdio>
+#include <string>
 
-template <typename T>
-void _swap (T *a, T *b) {
-    if (*a == *b)
-        return;
-    T tmp = *a;
-    *a = *b;
-    *b = tmp;
+#define fmtError(fmt) _fmterror(__func__, fmt)
+
+static inline std::string _fmterror(const std::string func,
+                                    const std::string msg)
+{
+    return func + ": " + msg;
 }
 
 typedef struct FibNode *FibNodePtr;
@@ -21,9 +21,12 @@ typedef std::vector<std::tuple<int, int>> EdgeSet;   // min spanning tree
 typedef std::vector<FibNodePtr> AdjNodeEdges;
 typedef std::vector<AdjNodeEdges> AdjList;    // adjacency list
 
+#ifdef WITH_GUI
 extern unsigned char speed; // algorithm speed limiter
 extern bool pause_execution; // if we want to step the execution
-extern std::mutex prim_mtx;
+extern std::mutex shared_mtx;   // protects GUI speed settings
+extern std::mutx uni_mtx;  // used to acquire lock on conditional variable
+#endif // WITH_GUI
 
 struct FibNode {
     unsigned id;
