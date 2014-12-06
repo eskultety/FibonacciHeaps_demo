@@ -25,6 +25,7 @@ static unsigned id = 0;
 
 FibHeap::~FibHeap()
 {
+    id = 0;
     if (min)
         FibDeleteHeap(min);
 }
@@ -75,11 +76,16 @@ FibHeap::FibInsertNode(FibNodePtr node)
 }
 
 FibNodePtr
-FibHeap::FibCreateNode(int key)
+FibHeap::FibCreateNode(unsigned my_id, int key)
 {
     FibNodePtr node = new(nothrow) FibNode;
     if (node) {
-        node->id = id++;
+        if (my_id == INT_MAX) {
+            node->id = id++;
+        } else {
+            node->id = my_id;
+            id += my_id;
+        }
         node->key = key;
         node->degree = 0;
         node->mark = 0;

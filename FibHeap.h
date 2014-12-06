@@ -32,7 +32,7 @@ class FibHeap
         int FibDeleteNode(FibNodePtr node);
         int FibInsertNode(FibNodePtr node);
         FibNodePtr FibFindNode(unsigned id);
-        FibNodePtr FibCreateNode(int key=INT_MIN);
+        FibNodePtr FibCreateNode(unsigned id=INT_MAX, int key=INT_MIN);
         friend FibHeapPtr
             FibUnion (FibHeap &h1, FibHeap &h2);
 
