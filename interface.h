@@ -1,6 +1,7 @@
 #ifndef __INTERFACE_H__
 #define __INTERFACE_H__
 
+#include <climits>
 #include <mutex>
 #include <thread>
 #include <condition_variable>
@@ -12,7 +13,23 @@
 #define SIG_FINISHED_ALL        2
 #define SIG_MIN_EXTRACTED       3
 #define SIG_MST_UPDATED         4
-#define SIG_ERROR               5
+#define SIG_NEXT_LINE           5
+#define SIG_ERROR               6
+
+#define GET_LINE(l) \
+    do { \
+        shared_mtx.lock(); \
+            l = cur_line; \
+        shared_mtx.unlock(); \
+    } while (0);
+
+#define NEXT_LINE(l) \
+    do { \
+        shared_mtx.lock(); \
+            ++cur_line; \
+        shared_mtx.unlock(); \
+        sigEvent(SIG_NEXT_LINE); \
+    } while (0);
 
 typedef enum {RUN,STEP} runMode;
 
@@ -20,6 +37,7 @@ extern unsigned char speed; // algorithm speed limiter
 extern std::condition_variable cv;
 extern bool ready;  // signalizes if GUI ready for next update
 extern bool sim_terminate;
+extern unsigned cur_line;   // signalizes current line of pseudo-algorithm
 extern runMode mode; // which mode of execution we do prefer
 extern std::mutex shared_mtx;   // protects GUI speed settings
 extern std::mutex uni_mtx;  // used to acquire lock on conditional variable
