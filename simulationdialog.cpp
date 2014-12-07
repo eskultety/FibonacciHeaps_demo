@@ -30,6 +30,7 @@ void simulation(unsigned root)
     std::unique_lock<std::mutex> u_lock(uni_mtx);
     while (!ready)
         cv.wait(u_lock);
+    ready = false;
     u_lock.unlock();
     if (sim_terminate)
         return;
@@ -49,6 +50,7 @@ SimulationDialog::SimulationDialog(unsigned m_root_id, QWidget *parent) :
     initSimulation();
     running = false;
     step_in_progress = false;
+    stepping = false;
     connect(&psignal, SIGNAL(sig(int)), this, SLOT(sig_backend(int)));
 
     ui->setupUi(this);
@@ -148,6 +150,9 @@ void SimulationDialog::on_pushButton_clicked()
     if (running || step_in_progress)
         return;
 
+    resetColors();
+    drawGraph();
+
     ui->verticalSlider->setEnabled(false);
 
     shared_mtx.lock();
@@ -165,6 +170,13 @@ void SimulationDialog::on_pushButton_2_clicked()
     if (running || step_in_progress)
         return;
 
+    if (!stepping)
+    {
+        stepping = true;
+        resetColors();
+        drawGraph();
+    }
+
     shared_mtx.lock();
         mode = STEP;
     shared_mtx.unlock();
@@ -176,15 +188,13 @@ void SimulationDialog::on_pushButton_2_clicked()
 
 void SimulationDialog::sig_backend(int signum)
 {
-    //std::cerr << "SIGNAL: " << signum << std::endl;
-    //unsigned u = psignal.getU();
-    //unsigned v = psignal.getV();
+    unsigned u = psignal.getU();
+    unsigned v = psignal.getV();
 
     switch (signum)
     {
     case SIG_PRIM_STEP_FINISHED:
-        //actualizeGraph();
-        //drawGraph();
+        drawGraph();
         if (running)
             continueSimulation();
         break;
@@ -195,6 +205,7 @@ void SimulationDialog::sig_backend(int signum)
     case SIG_FINISHED_ALL:
         ui->verticalSlider->setEnabled(true);
         running = false;
+        stepping = false;
         initPrimCode();
         printPrimCode(false);
         QMessageBox::information(0, "Simulator", "Simulation finished.");
@@ -206,12 +217,12 @@ void SimulationDialog::sig_backend(int signum)
         initSimulation();
         break;
     case SIG_MIN_EXTRACTED:
-        // TODO
+        actualizeGraph(u, v);
         if (running)
             continueSimulation();
         break;
     case SIG_MST_UPDATED:
-        // TODO
+        actualizeGraph(u, v);
         if (running)
             continueSimulation();
         break;
@@ -238,12 +249,19 @@ void SimulationDialog::drawGraph()
 
     foreach (gPlace *p, glob_places)
     {
-        QGraphicsTextItem *txt = new QGraphicsTextItem(0, scene);
-        txt->setFont(QFont("Helvetica", 8, QFont::Normal));
-        txt->setZValue(3);
-        txt->setPos(p->x(), p->y());
-        txt->setPlainText(QString::number(p->id()));
-        p->setText(txt);
+        QString tmp_key;
+        QGraphicsTextItem *txt_key = new QGraphicsTextItem(0, scene);
+        txt_key->setFont(QFont("Helvetica", 12, QFont::Bold));
+        txt_key->setZValue(3);
+        txt_key->setPos(p->x()+6, p->y()+1);
+        if (p->getFibNode()->key == INT_MIN)
+            tmp_key = QString();
+        else if (p->getFibNode()->key == INT_MAX)
+            tmp_key = QString::fromUtf8("\u221e");
+        else
+            tmp_key = QString::number(p->getFibNode()->key);
+        txt_key->setPlainText(tmp_key);
+        p->setKeyText(txt_key);
 
         QGraphicsEllipseItem *el = new QGraphicsEllipseItem(p->x(), p->y(),
                                                             diameter, diameter,
@@ -277,23 +295,30 @@ void SimulationDialog::drawGraph()
     }
 }
 
-void SimulationDialog::actualizeGraph()
+void SimulationDialog::actualizeGraph(unsigned u, unsigned v)
 {
-    /*
-    unsigned from, to;
-    EdgeSet set = prim->getPrimMST();
-    std::tuple<unsigned, unsigned>tpl = set.back();
-    std::tie(from, to) = tpl;
-
-    foreach (gEdge *e, glob_edges)
+    if (u != UINT_MAX && v != UINT_MAX)
     {
-        if (e->getFrom()->id() == from && e->getTo()->id() == to)
+        foreach (gEdge *e, glob_edges)
         {
-            e->setPenRed();
-            e->getFrom()->setBrushGray();
+            if (e->getFrom()->id() == u && e->getTo()->id() == v)
+                e->setPenRed();
+            if (e->getFrom()->id() == v && e->getTo()->id() == u)
+                e->setPenRed();
         }
+        drawGraph();
     }
-    */
+    else if (u != UINT_MAX)
+    {
+        foreach (gPlace *p, glob_places)
+        {
+            if (p->id() == u)
+                p->setBrushGreen();
+        }
+        drawGraph();
+    }
+    else
+        return;
 }
 
 // Text of Prim algorithm
@@ -308,8 +333,9 @@ void SimulationDialog::initPrimCode()
 void SimulationDialog::printPrimCode(bool actualize)
 {
     if (actualize)
+    {
         GET_LINE(prim_pos);
-    std::cerr << prim_pos << std::endl;
+    }
 
     if (prim_pos >= prim_code.size())
         return;
@@ -328,6 +354,16 @@ void SimulationDialog::printPrimCode(bool actualize)
         {
             ui->textEdit->append(str);
         }
+    }
+}
+
+void SimulationDialog::resetColors()
+{
+    foreach (gEdge *e, glob_edges)
+    {
+        e->getFrom()->setBrushYellow();
+        e->getTo()->setBrushYellow();
+        e->setPenBlack();
     }
 }
 

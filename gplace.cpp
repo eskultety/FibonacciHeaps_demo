@@ -67,14 +67,19 @@ void gPlace::setBrushYellow()
     brush.setColor(Qt::yellow);
 }
 
-void gPlace::setBrushGray()
+void gPlace::setBrushGreen()
 {
-    brush.setColor(Qt::gray);
+    brush.setColor(Qt::green);
 }
 
 void gPlace::setText(QGraphicsTextItem *m_txt)
 {
     txt = m_txt;
+}
+
+void gPlace::setKeyText(QGraphicsTextItem *m_txt_key)
+{
+    txt_key = m_txt_key;
 }
 
 QGraphicsEllipseItem *gPlace::getItem()
@@ -90,6 +95,11 @@ QBrush &gPlace::getBrush()
 QGraphicsTextItem *gPlace::getText()
 {
     return txt;
+}
+
+QGraphicsTextItem *gPlace::getKeyText()
+{
+    return txt_key;
 }
 
 void gPlace::setFibNode(FibNodePtr m_node)

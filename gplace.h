@@ -24,11 +24,13 @@ public:
 
     void setItem(QGraphicsEllipseItem *m_item);
     void setBrushYellow();
-    void setBrushGray();
+    void setBrushGreen();
     void setText(QGraphicsTextItem *m_txt);
+    void setKeyText(QGraphicsTextItem *m_txt_key);
     QGraphicsEllipseItem *getItem();
     QBrush &getBrush();
     QGraphicsTextItem *getText();
+    QGraphicsTextItem *getKeyText();
 
     void setFibNode(FibNodePtr m_node);
     FibNodePtr getFibNode();
@@ -40,6 +42,7 @@ private:
     QGraphicsEllipseItem *item;
     QBrush brush;
     QGraphicsTextItem *txt;
+    QGraphicsTextItem *txt_key;
     FibNodePtr node;
 };
 

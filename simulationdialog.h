@@ -42,13 +42,15 @@ private:
     void continueSimulation();
     void exitError(QString msg);
     void drawGraph();
-    void actualizeGraph();
+    void actualizeGraph(unsigned u, unsigned v);
     void initPrimCode();
     void printPrimCode(bool actualize);
+    void resetColors();
 
     std::thread Simulation;
     bool running;
     bool step_in_progress;
+    bool stepping;
     unsigned root_id;
 
     QStringList prim_code;
