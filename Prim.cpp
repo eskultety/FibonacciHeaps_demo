@@ -47,7 +47,6 @@ Prim::PrimMinSpanningTree(int (*weight)(unsigned u, unsigned v),
     unsigned line;
     unsigned tmp_line[2];
     GET_LINE(line);
-    tmp_line[0] = line;
     #endif
     int ret = -1;
     int w = -1;
@@ -73,6 +72,17 @@ Prim::PrimMinSpanningTree(int (*weight)(unsigned u, unsigned v),
         throw PrimException(fmtError(buf));
         goto cleanup;
     }
+
+
+    #ifdef WITH_GUI
+        NEXT_LINE(++line);
+        syncGUI(SIG_NEXT_LINE);
+        tmp_line[0] = line;
+
+        /* unexpected error occurred */
+        if (sim_terminate)
+            exit(-1);
+    #endif
 
     /* properly initialize Fibonacci heap */
     for (i = 0; i < this->adj.size(); i++) {
@@ -176,6 +186,15 @@ Prim::PrimMinSpanningTree(int (*weight)(unsigned u, unsigned v),
                 exit(-1);
         #endif
 
+        #ifdef WITH_GUI
+            NEXT_LINE(++line);
+            syncGUI(SIG_NEXT_LINE);
+
+            /* unexpected error occurred */
+            if (sim_terminate)
+                exit(-1);
+        #endif
+
         /* u <- Extract-Min(Q) */
         u = fib_heap->FibExtractMin();
         if (!u) {
@@ -185,8 +204,8 @@ Prim::PrimMinSpanningTree(int (*weight)(unsigned u, unsigned v),
         }
         #ifdef WITH_GUI // finished Extract-Min(Q)
             NEXT_LINE(++line);
-            syncGUI(SIG_NEXT_LINE);
             syncGUI(SIG_MIN_EXTRACTED, u->id);
+            syncGUI(SIG_NEXT_LINE);
 
             /* unexpected error occurred */
             if (sim_terminate)
@@ -232,6 +251,16 @@ Prim::PrimMinSpanningTree(int (*weight)(unsigned u, unsigned v),
             v = this->adj[u->id][i];
             unsigned uid = u->id;
             unsigned vid = v->id;
+
+
+            #ifdef WITH_GUI
+                NEXT_LINE(++line);
+                syncGUI(SIG_NEXT_LINE);
+
+                /* unexpected error occurred */
+                if (sim_terminate)
+                    exit(-1);
+            #endif
 
             /* if v in Q and w(u,v) < key[v] */
             if ((v = fib_heap->FibFindNode(vid)) &&
