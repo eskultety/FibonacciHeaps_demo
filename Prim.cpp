@@ -9,7 +9,7 @@
 #ifdef WITH_GUI
 #include "interface.h"
 
-void syncGUI(int signal)
+void syncGUI(int signal, unsigned u, unsigned v)
 {
     unsigned char sp;
     runMode m;
@@ -20,7 +20,12 @@ void syncGUI(int signal)
     if (m == RUN)
         std::this_thread::sleep_for(std::chrono::milliseconds(MILLISEC / sp));
     /* GUI update request */
-    sigEvent(signal);
+    if (u == UINT_MAX)
+        sigEvent(signal);   /* update the whole scene */
+    else if (v == UINT_MAX)
+        sigEvent(signal, u);    /* update only minimal node */
+    else
+        sigEvent(signal, u, v);     /* update MST */
 
     /* wait for GUI ready */
     std::unique_lock<std::mutex> u_lock(uni_mtx);
@@ -119,7 +124,7 @@ Prim::PrimMinSpanningTree(int (*weight)(unsigned u, unsigned v),
             goto cleanup;
         }
         #ifdef WITH_GUI // finished Extract-Min(Q)
-            syncGUI(SIG_PRIM_STEP_FINISHED);
+            syncGUI(SIG_MIN_EXTRACTED, u->id);
 
             /* unexpected error occurred */
             if (sim_terminate)
@@ -133,7 +138,7 @@ Prim::PrimMinSpanningTree(int (*weight)(unsigned u, unsigned v),
             this->mst_cost += weight(u->id,pi[u->id]->id);
         }
         #ifdef WITH_GUI // finished A U (u, pi[u])
-            syncGUI(SIG_PRIM_STEP_FINISHED);
+            syncGUI(SIG_MST_UPDATED, u->id, pi[u->id]->id);
 
             /* unexpected error occurred */
             if (sim_terminate)
