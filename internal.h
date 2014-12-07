@@ -17,7 +17,7 @@ static inline std::string _fmterror(const std::string func,
 }
 
 typedef struct FibNode *FibNodePtr;
-typedef std::vector<std::tuple<int, int>> EdgeSet;   // min spanning tree
+typedef std::vector<std::tuple<unsigned, unsigned>> EdgeSet;   // min spanning tree
 typedef std::vector<FibNodePtr> AdjNodeEdges;
 typedef std::vector<AdjNodeEdges> AdjList;    // adjacency list
 
