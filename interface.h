@@ -21,15 +21,14 @@
         shared_mtx.lock(); \
             l = cur_line; \
         shared_mtx.unlock(); \
-    } while (0);
+    } while (0)
 
 #define NEXT_LINE(l) \
     do { \
         shared_mtx.lock(); \
-            ++cur_line; \
+            cur_line = l; \
         shared_mtx.unlock(); \
-        sigEvent(SIG_NEXT_LINE); \
-    } while (0);
+    } while (0)
 
 typedef enum {RUN,STEP} runMode;
 
