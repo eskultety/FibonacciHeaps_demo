@@ -9,10 +9,17 @@ class PrimSignal : public QObject
     Q_OBJECT
 public:
     explicit PrimSignal(QObject *parent = 0);
-    void qSigEvent(unsigned event);
+    void qSigEvent(int signal, unsigned m_u, unsigned m_v);
+
+    unsigned getU();
+    unsigned getV();
 
 signals:
-    void sig(unsigned event);
+    void sig(int signal);
+
+private:
+    unsigned u;
+    unsigned v;
 };
 
 #endif // PRIMSIGNAL_H

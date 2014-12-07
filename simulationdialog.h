@@ -16,7 +16,6 @@
 
 
 int weight(unsigned u, unsigned v);
-void sigEvent(unsigned event);
 void simulation(unsigned root);
 
 
@@ -35,22 +34,22 @@ public:
 private slots:
     void on_pushButton_clicked();
     void on_pushButton_2_clicked();
-    void sig_backend(unsigned event);
+    void sig_backend(int signum);
     void on_verticalSlider_valueChanged(int value);
 
 private:
     void initSimulation();
+    void continueSimulation();
     void exitError(QString msg);
-    void initPrimCode();
+    void drawGraph();
     void actualizeGraph();
-    void printGraph();
+    void initPrimCode();
+    void printPrimCode(bool actualize);
 
     std::thread Simulation;
     bool running;
     bool step_in_progress;
     unsigned root_id;
-
-    void drawGraph();
 
     QStringList prim_code;
     int prim_pos;

@@ -1,8 +1,6 @@
 #include "simulationdialog.h"
 #include "ui_simulationdialog.h"
 
-#include <QDebug>
-
 
 Prim *prim;
 PrimSignal psignal;
@@ -22,15 +20,17 @@ int weight(unsigned u, unsigned v)
     return -1;
 }
 
-void sigEvent(unsigned event)
+void sigEvent(int sig, unsigned u, unsigned v)
 {
-    psignal.qSigEvent(event);
+    psignal.qSigEvent(sig, u, v);
 }
 
 void simulation(unsigned root)
 {
+    std::unique_lock<std::mutex> u_lock(uni_mtx);
     while (!ready)
         cv.wait(u_lock);
+    u_lock.unlock();
     if (sim_terminate)
         return;
     try {
@@ -49,7 +49,7 @@ SimulationDialog::SimulationDialog(unsigned m_root_id, QWidget *parent) :
     initSimulation();
     running = false;
     step_in_progress = false;
-    connect(&psignal, SIGNAL(sig(unsigned)), this, SLOT(sig_backend(unsigned)));
+    connect(&psignal, SIGNAL(sig(int)), this, SLOT(sig_backend(int)));
 
     ui->setupUi(this);
 
@@ -70,15 +70,29 @@ SimulationDialog::SimulationDialog(unsigned m_root_id, QWidget *parent) :
 
     ui->textEdit->setReadOnly(true);
     ui->textEdit->setCurrentFont(QFont("Courier", 10));
+    prim_code << QString::fromUtf8("PRIM(G,w,r)")
+              << QString::fromUtf8("1    for each u \u03f5 V")
+              << QString::fromUtf8("2        do key[u] \u2190 \u221e")
+              << QString::fromUtf8("3           \u03c0[u]   \u2190 NIL")
+              << QString::fromUtf8("4    key[r] \u2190 0")
+              << QString::fromUtf8("5    Q \u2190 V")
+              << QString::fromUtf8("6    while Q != \u2205")
+              << QString::fromUtf8("7          do u \u2190 EXTRACT-MIN(Q)")
+              << QString::fromUtf8("8             if \u03c0[u] != NIL")
+              << QString::fromUtf8("9                then A = A \u22c3 {(u,\u03c0[u])}")
+              << QString::fromUtf8("10            for each v \u03f5 Adj[u]")
+              << QString::fromUtf8("11                do if v \u03f5 Q and w(u,v) < key[v]")
+              << QString::fromUtf8("12                      then \u03c0[v]   \u2190 u")
+              << QString::fromUtf8("13                           key[v] \u2190 w(u,v)");
     initPrimCode();
-    printGraph();
+    printPrimCode(false);
 }
 
 SimulationDialog::~SimulationDialog()
 {
     sim_terminate = true;
-    ready = true;
-    cv.notify_one();
+
+    continueSimulation();
 
     delete ui;
     Simulation.join();
@@ -110,7 +124,16 @@ void SimulationDialog::initSimulation()
         }
     }
 
+    prim_pos = 0;
     Simulation = std::thread(simulation, root_id);
+}
+
+void SimulationDialog::continueSimulation()
+{
+    std::unique_lock<std::mutex> u_lock(uni_mtx);
+    ready = true;
+    cv.notify_one();
+    u_lock.unlock();
 }
 
 void SimulationDialog::exitError(QString msg)
@@ -132,10 +155,8 @@ void SimulationDialog::on_pushButton_clicked()
     shared_mtx.unlock();
 
     running = true;
-    prim_pos = 0;
 
-    ready = true;
-    cv.notify_one();
+    continueSimulation();
 }
 
 // Step forward
@@ -144,58 +165,67 @@ void SimulationDialog::on_pushButton_2_clicked()
     if (running || step_in_progress)
         return;
 
-    if (prim->getPrimStatus())
-    {
-        QMessageBox::information(0, "Simulator", "Simulation finished.");
-        return;
-    }
-
     shared_mtx.lock();
         mode = STEP;
     shared_mtx.unlock();
 
     step_in_progress = true;
-    prim_pos = 0;
 
-    ready = true;
-    cv.notify_one();
+    continueSimulation();
 }
 
-void SimulationDialog::sig_backend(unsigned event)
+void SimulationDialog::sig_backend(int signum)
 {
-    switch (event)
+    //std::cerr << "SIGNAL: " << signum << std::endl;
+    //unsigned u = psignal.getU();
+    //unsigned v = psignal.getV();
+
+    switch (signum)
     {
     case SIG_PRIM_STEP_FINISHED:
+        //actualizeGraph();
+        //drawGraph();
         if (running)
-        {
-            ready = true;
-            cv.notify_one();
-        }
-        actualizeGraph();
-        printGraph();
+            continueSimulation();
         break;
     case SIG_FIB_STEP_FINISHED:
         if (running)
-        {
-            ready = true;
-            cv.notify_one();
-        }
+            continueSimulation();
         break;
     case SIG_FINISHED_ALL:
         ui->verticalSlider->setEnabled(true);
         running = false;
+        initPrimCode();
+        printPrimCode(false);
         QMessageBox::information(0, "Simulator", "Simulation finished.");
 
-        qDebug() << "Min.: " << prim->getPrimMSTCost();
+        std::cerr << "Min.: " << prim->PrimGetMSTCost() << std::endl;
 
         Simulation.join();
         delete prim;
         initSimulation();
         break;
+    case SIG_MIN_EXTRACTED:
+        // TODO
+        if (running)
+            continueSimulation();
+        break;
+    case SIG_MST_UPDATED:
+        // TODO
+        if (running)
+            continueSimulation();
+        break;
+    case SIG_NEXT_LINE:
+        printPrimCode(true);
+        if (running)
+            continueSimulation();
+        break;
     case SIG_ERROR:
         exitError("Simulation error!");
         break;
     default:
+        if (running)
+            continueSimulation();
         break;
     }
 
@@ -209,7 +239,7 @@ void SimulationDialog::drawGraph()
     foreach (gPlace *p, glob_places)
     {
         QGraphicsTextItem *txt = new QGraphicsTextItem(0, scene);
-        txt->setFont(QFont("Helvetica", 12, QFont::Bold));
+        txt->setFont(QFont("Helvetica", 8, QFont::Normal));
         txt->setZValue(3);
         txt->setPos(p->x(), p->y());
         txt->setPlainText(QString::number(p->id()));
@@ -247,28 +277,9 @@ void SimulationDialog::drawGraph()
     }
 }
 
-// Text of Prim algorithm
-void SimulationDialog::initPrimCode()
-{
-    prim_pos = 0;
-    prim_code << QString::fromUtf8("PRIM(G,w,r)")
-              << QString::fromUtf8("1    for each u \u03f5 V")
-              << QString::fromUtf8("2        do key[u] \u2190 \u221e")
-              << QString::fromUtf8("3           \u03c0[u]   \u2190 NIL")
-              << QString::fromUtf8("4    key[r] \u2190 0")
-              << QString::fromUtf8("5    Q \u2190 V")
-              << QString::fromUtf8("6    while Q != \u2205")
-              << QString::fromUtf8("7          do u \u2190 EXTRACT-MIN(Q)")
-              << QString::fromUtf8("8             if \u03c0[u] != NIL")
-              << QString::fromUtf8("9                then A = A \u22c3 {(u,\u03c0[u])}")
-              << QString::fromUtf8("10            for each v \u03f5 Adj[u]")
-              << QString::fromUtf8("11                do if v \u03f5 Q and w(u,v) < key[v]")
-              << QString::fromUtf8("12                      then \u03c0[v]   \u2190 u")
-              << QString::fromUtf8("13                           key[v] \u2190 w(u,v)");
-}
-
 void SimulationDialog::actualizeGraph()
 {
+    /*
     unsigned from, to;
     EdgeSet set = prim->getPrimMST();
     std::tuple<unsigned, unsigned>tpl = set.back();
@@ -282,11 +293,24 @@ void SimulationDialog::actualizeGraph()
             e->getFrom()->setBrushGray();
         }
     }
+    */
 }
 
-void SimulationDialog::printGraph()
+// Text of Prim algorithm
+void SimulationDialog::initPrimCode()
 {
-    prim_pos++;
+    prim_pos = 0;
+    shared_mtx.lock();
+    cur_line = prim_pos;
+    shared_mtx.unlock();
+}
+
+void SimulationDialog::printPrimCode(bool actualize)
+{
+    if (actualize)
+        GET_LINE(prim_pos);
+    std::cerr << prim_pos << std::endl;
+
     if (prim_pos >= prim_code.size())
         return;
 

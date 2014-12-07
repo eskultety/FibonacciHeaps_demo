@@ -11,10 +11,10 @@ runMode mode = RUN;
 bool ready;
 bool sim_terminate;
 unsigned char speed = 1;
+unsigned cur_line;
 std::mutex shared_mtx;
 std::mutex uni_mtx;
 std::condition_variable cv;
-std::unique_lock<std::mutex> u_lock(uni_mtx);
 
 
 int main(int argc, char *argv[])

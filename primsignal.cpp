@@ -5,7 +5,19 @@ PrimSignal::PrimSignal(QObject *parent) :
 {
 }
 
-void PrimSignal::qSigEvent(unsigned event)
+void PrimSignal::qSigEvent(int signal, unsigned m_u, unsigned m_v)
 {
-    emit sig(event);
+    u = m_u;
+    v = m_v;
+    emit sig(signal);
+}
+
+unsigned PrimSignal::getU()
+{
+    return u;
+}
+
+unsigned PrimSignal::getV()
+{
+    return v;
 }
