@@ -144,8 +144,8 @@ Prim::PrimMinSpanningTree(int (*weight)(unsigned u, unsigned v),
     this->adj[root][0]->key = 0;
     #ifdef WITH_GUI // finished root init
         NEXT_LINE(++line);
-        syncGUI(SIG_NEXT_LINE);
         syncGUI(SIG_PRIM_STEP_FINISHED);
+        syncGUI(SIG_NEXT_LINE);
 
         /* unexpected error occurred */
         if (sim_terminate)
@@ -214,6 +214,16 @@ Prim::PrimMinSpanningTree(int (*weight)(unsigned u, unsigned v),
 
         /* if pi[u] then A = A U (u, pi[u]) */
         if (pi[u->id]) {
+
+            #ifdef WITH_GUI
+                NEXT_LINE(++line);
+                syncGUI(SIG_NEXT_LINE);
+
+                /* unexpected error occurred */
+                if (sim_terminate)
+                    exit(-1);
+            #endif
+
             this->min_spanning_tree.push_back(make_tuple(u->id,
                                                          pi[u->id]->id));
             this->mst_cost += weight(u->id,pi[u->id]->id);
@@ -225,6 +235,10 @@ Prim::PrimMinSpanningTree(int (*weight)(unsigned u, unsigned v),
                     exit(-1);
             #endif
         }
+        #ifdef WITH_GUI
+        else
+            NEXT_LINE(++line);
+        #endif
 
         #ifdef WITH_GUI
             NEXT_LINE(++line);
