@@ -9,7 +9,7 @@ class Prim {
         AdjList adj;
         EdgeSet edges;
         EdgeSet min_spanning_tree;
-        FibHeapPtr fib_heap;
+        FibHeapPtr fib_heap = nullptr;
         int mst_cost = 0;
         unsigned next_id = 0;
         bool status_finished = false;
@@ -20,9 +20,10 @@ class Prim {
         int PrimAddEdge(unsigned u, unsigned v);
         int PrimMinSpanningTree(int (*weight)(unsigned u, unsigned v),
                                 unsigned root);
-        int getPrimMSTCost(void) { return mst_cost; }
-        EdgeSet& getPrimMST(void) { return min_spanning_tree; }
-        bool getPrimStatus(void) { return status_finished; }
+        int PrimGetMSTCost(void) { return mst_cost; }
+        EdgeSet& PrimGetMST(void) { return min_spanning_tree; }
+        bool PrimGetStatus(void) { return status_finished; }
+        FibNodePtr PrimGetHeapMin(void);
 
         class PrimException: public std::exception
         {

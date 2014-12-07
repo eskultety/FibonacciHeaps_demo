@@ -265,3 +265,9 @@ Prim::PrimAddEdge(unsigned u, unsigned v)
     return 0;
 }
 
+FibNodePtr
+Prim::PrimGetHeapMin(void) {
+    if (this->fib_heap)
+        return this->fib_heap->FibGetMin();
+    return nullptr;
+}
