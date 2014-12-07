@@ -4,14 +4,52 @@
 #include <QDebug>
 
 
-SimulationDialog::SimulationDialog(Prim *m_prim, PrimSignal *m_psignal,
-    QWidget *parent) : QDialog(parent), ui(new Ui::SimulationDialog)
+Prim *prim;
+PrimSignal psignal;
+
+
+int weight(unsigned u, unsigned v)
 {
-    prim = m_prim;
-    psignal = m_psignal;
+    foreach (gEdge *e, glob_edges)
+    {
+        if (e->getFrom()->id() == u || e->getTo()->id() == u)
+        {
+            if (e->getFrom()->id() == v || e->getTo()->id() == v)
+                return e->w();
+        }
+    }
+
+    return -1;
+}
+
+void sigEvent(unsigned event)
+{
+    psignal.qSigEvent(event);
+}
+
+void simulation(unsigned root)
+{
+    while (!ready)
+        cv.wait(u_lock);
+    if (sim_terminate)
+        return;
+    try {
+        prim->PrimMinSpanningTree(weight, root);
+    } catch (Prim::PrimException &e) {
+        std::cerr << e.what();
+        sigEvent(SIG_ERROR);
+    }
+}
+
+
+SimulationDialog::SimulationDialog(unsigned m_root_id, QWidget *parent) :
+    QDialog(parent), ui(new Ui::SimulationDialog)
+{
+    root_id = m_root_id;
+    initSimulation();
     running = false;
     step_in_progress = false;
-    connect(psignal, SIGNAL(sig(unsigned)), this, SLOT(sig_backend(unsigned)));
+    connect(&psignal, SIGNAL(sig(unsigned)), this, SLOT(sig_backend(unsigned)));
 
     ui->setupUi(this);
 
@@ -33,12 +71,52 @@ SimulationDialog::SimulationDialog(Prim *m_prim, PrimSignal *m_psignal,
     ui->textEdit->setReadOnly(true);
     ui->textEdit->setCurrentFont(QFont("Courier", 10));
     initPrimCode();
-    printPrim();
+    printGraph();
 }
 
 SimulationDialog::~SimulationDialog()
 {
+    sim_terminate = true;
+    ready = true;
+    cv.notify_one();
+
     delete ui;
+    Simulation.join();
+
+    delete prim;
+    sim_terminate = false;
+    ready = false;
+}
+
+void SimulationDialog::initSimulation()
+{
+    prim = new Prim();
+
+    FibNodePtr ptr;
+    foreach (gPlace *p, glob_places)
+    {
+        if ((ptr = prim->PrimAddVertex( p->id() )) == NULL)
+            exitError("Error in backend: On adding FibNodePtr.");
+
+        p->setFibNode(ptr);
+    }
+
+    foreach (gEdge *e, glob_edges)
+    {
+        try {
+            prim->PrimAddEdge(e->getFrom()->id(), e->getTo()->id());
+        } catch (Prim::PrimException &e) {
+            exitError("Error in backend: On creating adjacency list.");
+        }
+    }
+
+    Simulation = std::thread(simulation, root_id);
+}
+
+void SimulationDialog::exitError(QString msg)
+{
+    QMessageBox::information(0, "Simulator", msg);
+    this->close();
 }
 
 // Run simulation
@@ -54,19 +132,10 @@ void SimulationDialog::on_pushButton_clicked()
     shared_mtx.unlock();
 
     running = true;
+    prim_pos = 0;
 
-    while (!prim->getPrimStatus())
-    {
-        ready = true;
-        cv.notify_one();
-    }
-
-    running = false;
-    ui->verticalSlider->setEnabled(true);
-
-    QMessageBox::information(0, "Simulator", "Simulation finished.");
-
-    qDebug() << "Min.: " << prim->getPrimMSTCost();
+    ready = true;
+    cv.notify_one();
 }
 
 // Step forward
@@ -85,41 +154,49 @@ void SimulationDialog::on_pushButton_2_clicked()
         mode = STEP;
     shared_mtx.unlock();
 
-    ready = true;
     step_in_progress = true;
+    prim_pos = 0;
+
+    ready = true;
     cv.notify_one();
-
-    /*
-    ///////////////
-    gEdge *e = glob_edges.front();
-    e->setPenRed();
-    gPlace *p =glob_places.front();
-    p->setBrushGray();
-    ///////////////
-
-    printPrim();
-    drawGraph();
-    */
 }
 
 void SimulationDialog::sig_backend(unsigned event)
 {
-    qDebug() << "SIGNAL number: " << event;
     switch (event)
     {
-        case SIG_PRIM_STEP_FINISHED:
-            break;
-        case SIG_FIB_STEP_FINISHED:
-            break;
-        case SIG_ERROR:
-            QMessageBox::information(0, "Simulator", "Simulation error!");
-            sim_terminate = true;
+    case SIG_PRIM_STEP_FINISHED:
+        if (running)
+        {
             ready = true;
             cv.notify_one();
-            this->close();
-            break;
-        default:
-            break;
+        }
+        actualizeGraph();
+        printGraph();
+        break;
+    case SIG_FIB_STEP_FINISHED:
+        if (running)
+        {
+            ready = true;
+            cv.notify_one();
+        }
+        break;
+    case SIG_FINISHED_ALL:
+        ui->verticalSlider->setEnabled(true);
+        running = false;
+        QMessageBox::information(0, "Simulator", "Simulation finished.");
+
+        qDebug() << "Min.: " << prim->getPrimMSTCost();
+
+        Simulation.join();
+        delete prim;
+        initSimulation();
+        break;
+    case SIG_ERROR:
+        exitError("Simulation error!");
+        break;
+    default:
+        break;
     }
 
     step_in_progress = false;
@@ -190,7 +267,24 @@ void SimulationDialog::initPrimCode()
               << QString::fromUtf8("13                           key[v] \u2190 w(u,v)");
 }
 
-void SimulationDialog::printPrim()
+void SimulationDialog::actualizeGraph()
+{
+    unsigned from, to;
+    EdgeSet set = prim->getPrimMST();
+    std::tuple<unsigned, unsigned>tpl = set.back();
+    std::tie(from, to) = tpl;
+
+    foreach (gEdge *e, glob_edges)
+    {
+        if (e->getFrom()->id() == from && e->getTo()->id() == to)
+        {
+            e->setPenRed();
+            e->getFrom()->setBrushGray();
+        }
+    }
+}
+
+void SimulationDialog::printGraph()
 {
     prim_pos++;
     if (prim_pos >= prim_code.size())

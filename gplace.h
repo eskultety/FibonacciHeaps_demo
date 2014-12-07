@@ -23,7 +23,7 @@ public:
     unsigned id();
 
     void setItem(QGraphicsEllipseItem *m_item);
-    void setBrushBlack();
+    void setBrushYellow();
     void setBrushGray();
     void setText(QGraphicsTextItem *m_txt);
     QGraphicsEllipseItem *getItem();

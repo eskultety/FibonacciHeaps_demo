@@ -2,43 +2,6 @@
 #include "ui_mainwindow.h"
 
 
-Prim *prim;
-PrimSignal psignal;
-
-int weight(unsigned u, unsigned v)
-{
-    foreach (gEdge *e, glob_edges)
-    {
-        if (e->getFrom()->id() == u || e->getTo()->id() == u)
-        {
-            if (e->getFrom()->id() == v || e->getTo()->id() == v)
-                return e->w();
-        }
-    }
-
-    return -1;
-}
-
-void sigEvent(unsigned event)
-{
-    psignal.qSigEvent(event);
-}
-
-void simulation(unsigned root)
-{
-    while (!ready)
-        cv.wait(u_lock);
-    if (sim_terminate)
-        return;
-    try {
-        prim->PrimMinSpanningTree(weight, root);
-    } catch (Prim::PrimException &e) {
-        std::cerr << e.what();
-        sigEvent(SIG_ERROR);
-    }
-}
-
-
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -126,38 +89,10 @@ void MainWindow::on_pushButton_4_clicked()
         return;
     }
 
-    prim = new Prim();
-
-    FibNodePtr ptr;
     QInputDialog qDialog;
     QStringList items;
     foreach (gPlace *p, glob_places)
-    {
         items << QString::number(p->id());
-
-        if ((ptr = prim->PrimAddVertex( p->id() )) == NULL)
-        {
-            QMessageBox::information(0, "Simulator", "Error in backend: "
-                                     "On adding FibNodePtr.");
-            delete prim;
-            return;
-        }
-        p->setFibNode(ptr);
-    }
-
-    foreach (gEdge *e, glob_edges)
-    {
-        try {
-            prim->PrimAddEdge(e->getFrom()->id(), e->getTo()->id());
-        } catch (Prim::PrimException &e) {
-            QMessageBox::information(0, "Simulator", "Error in backend: "
-                                     "On creating adjacency list.");
-            delete prim;
-            return;
-        }
-    }
-
-    // TODO: listbox
     qDialog.setOptions(QInputDialog::UseListViewForComboBoxItems);
     qDialog.setComboBoxItems(items);
     qDialog.setWindowTitle("Choose root node");
@@ -165,29 +100,18 @@ void MainWindow::on_pushButton_4_clicked()
                this, SLOT(setRoot(const QString &)));
     if (qDialog.exec() == QDialog::Rejected)
     {
-        delete prim;
+        QMessageBox::information(0, "Simulator", "You need to select root "
+                                 "ID before simulation.");
         return;
     }
 
-    std::thread Simulation(simulation, root_id);
-
-    simdlg = new SimulationDialog(prim, &psignal, this);
+    simdlg = new SimulationDialog(root_id, this);
     simdlg->setWindowFlags(Qt::Window | Qt::WindowMinimizeButtonHint
                            | Qt::WindowMaximizeButtonHint
                            | Qt::WindowCloseButtonHint);
     simdlg->exec();
 
-    sim_terminate = true;
-    ready = true;
-    cv.notify_one();
-
-    Simulation.join();
-
     delete simdlg;
-    delete prim;
-    sim_terminate = false;
-    ready = false;
-
     ui->graphicsView->clearView();
     ui->graphicsView->redrawView();
 }

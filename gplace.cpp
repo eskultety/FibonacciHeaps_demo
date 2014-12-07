@@ -62,9 +62,9 @@ void gPlace::setItem(QGraphicsEllipseItem *m_item)
     item = m_item;
 }
 
-void gPlace::setBrushBlack()
+void gPlace::setBrushYellow()
 {
-    brush.setColor(Qt::black);
+    brush.setColor(Qt::yellow);
 }
 
 void gPlace::setBrushGray()

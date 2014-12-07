@@ -7,13 +7,6 @@
 #include "xmlfileio.h"
 #include "simulationdialog.h"
 #include "interface.h"
-#include "Prim.h"
-#include "primsignal.h"
-
-
-int weight(unsigned u, unsigned v);
-void sigEvent(unsigned event);
-void simulation(unsigned root);
 
 
 namespace Ui {

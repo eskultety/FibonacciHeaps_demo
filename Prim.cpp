@@ -53,7 +53,7 @@ Prim::PrimMinSpanningTree(int (*weight)(unsigned u, unsigned v),
         this->adj[i][0]->key = INT_MAX;
         pi[this->adj[i][0]->id] = NULL;
         #ifdef WITH_GUI // finished init
-            MUTEX_AC(sp, pause);
+            MUTEX_AC(sp, run_mode);
             if (run_mode == RUN)
                 this_thread::sleep_for(chrono::milliseconds(MILLISEC / sp));
             sigEvent(SIG_PRIM_STEP_FINISHED);
@@ -68,7 +68,7 @@ Prim::PrimMinSpanningTree(int (*weight)(unsigned u, unsigned v),
     /* r.key = 0 */
     this->adj[root][0]->key = 0;
     #ifdef WITH_GUI // finished r.key = 0
-        MUTEX_AC(sp, pause);
+        MUTEX_AC(sp, run_mode);
         if (run_mode == RUN)
             this_thread::sleep_for(chrono::milliseconds(MILLISEC / sp));
         sigEvent(SIG_PRIM_STEP_FINISHED);
@@ -92,7 +92,7 @@ Prim::PrimMinSpanningTree(int (*weight)(unsigned u, unsigned v),
         }
     }
     #ifdef WITH_GUI // finished Q <-- V
-        MUTEX_AC(sp, pause);
+        MUTEX_AC(sp, run_mode);
         if (run_mode == RUN)
             this_thread::sleep_for(chrono::milliseconds(MILLISEC / sp));
         sigEvent(SIG_PRIM_STEP_FINISHED);
@@ -114,7 +114,7 @@ Prim::PrimMinSpanningTree(int (*weight)(unsigned u, unsigned v),
             goto cleanup;
         }
         #ifdef WITH_GUI // finished Extract_miin(Q)
-            MUTEX_AC(sp, pause);
+            MUTEX_AC(sp, run_mode);
             if (run_mode == RUN)
                 this_thread::sleep_for(chrono::milliseconds(MILLISEC / sp));
             sigEvent(SIG_PRIM_STEP_FINISHED);
@@ -133,7 +133,7 @@ Prim::PrimMinSpanningTree(int (*weight)(unsigned u, unsigned v),
             this->mst_cost += weight(u->id,pi[u->id]->id);
         }
         #ifdef WITH_GUI // finished A U (u, pi[u])
-            MUTEX_AC(sp, pause);
+            MUTEX_AC(sp, run_mode);
             if (run_mode == RUN)
                 this_thread::sleep_for(chrono::milliseconds(MILLISEC / sp));
             sigEvent(SIG_PRIM_STEP_FINISHED);
@@ -154,7 +154,7 @@ Prim::PrimMinSpanningTree(int (*weight)(unsigned u, unsigned v),
             if ((v = fib_heap->FibFindNode(vid)) &&
                  (w = weight(uid, vid)) < v->key) {
                 #ifdef WITH_GUI // finished if condition
-                    MUTEX_AC(sp, pause);
+                    MUTEX_AC(sp, run_mode);
                     if (run_mode == RUN)
                         this_thread::sleep_for(chrono::milliseconds(MILLISEC / sp));
                     sigEvent(SIG_PRIM_STEP_FINISHED);
@@ -169,7 +169,7 @@ Prim::PrimMinSpanningTree(int (*weight)(unsigned u, unsigned v),
                 pi[vid] = u;
                 fib_heap->FibDecreaseKey(v, w);
                 #ifdef WITH_GUI // finished assignements
-                    MUTEX_AC(sp, pause);
+                    MUTEX_AC(sp, run_mode);
                     if (run_mode == RUN)
                         this_thread::sleep_for(chrono::milliseconds(MILLISEC / sp));
                     sigEvent(SIG_PRIM_STEP_FINISHED);
