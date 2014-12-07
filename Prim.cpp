@@ -8,6 +8,28 @@
 
 #ifdef WITH_GUI
 #include "interface.h"
+
+void syncGUI(int signal)
+{
+    unsigned char sp;
+    runMode m;
+    shared_mtx.lock();
+        sp = speed;
+        m = mode;
+    shared_mtx.unlock();
+    if (m == RUN)
+        std::this_thread::sleep_for(std::chrono::milliseconds(MILLISEC / sp));
+    /* GUI update request */
+    sigEvent(signal);
+
+    /* wait for GUI ready */
+    std::unique_lock<std::mutex> u_lock(uni_mtx);
+    while (!ready)
+        cv.wait(u_lock);
+
+    /* continue with execution of the next hunk */
+    ready = false;
+}
 #endif
 
 using namespace std;
@@ -16,11 +38,6 @@ int
 Prim::PrimMinSpanningTree(int (*weight)(unsigned u, unsigned v),
                           unsigned root)
 {
-    #ifdef WITH_GUI
-    runMode run_mode;
-    unsigned char sp;
-    #endif
-
     int ret = -1;
     int w = -1;
     unsigned i = 0;
@@ -52,31 +69,23 @@ Prim::PrimMinSpanningTree(int (*weight)(unsigned u, unsigned v),
             continue;
         this->adj[i][0]->key = INT_MAX;
         pi[this->adj[i][0]->id] = NULL;
-        #ifdef WITH_GUI // finished init
-            MUTEX_AC(sp, run_mode);
-            if (run_mode == RUN)
-                this_thread::sleep_for(chrono::milliseconds(MILLISEC / sp));
-            sigEvent(SIG_PRIM_STEP_FINISHED);
-            while (!ready)
-                cv.wait(u_lock);
+        #ifdef WITH_GUI // finished Fibonacci init
+            syncGUI(SIG_PRIM_STEP_FINISHED);
+
+            /* unexpected error occurred */
             if (sim_terminate)
-                return 0;
-            ready = false;
+                exit(-1);
         #endif
     }
 
     /* r.key = 0 */
     this->adj[root][0]->key = 0;
-    #ifdef WITH_GUI // finished r.key = 0
-        MUTEX_AC(sp, run_mode);
-        if (run_mode == RUN)
-            this_thread::sleep_for(chrono::milliseconds(MILLISEC / sp));
-        sigEvent(SIG_PRIM_STEP_FINISHED);
-        while (!ready)
-            cv.wait(u_lock);
+    #ifdef WITH_GUI // finished root init
+        syncGUI(SIG_PRIM_STEP_FINISHED);
+
+        /* unexpected error occurred */
         if (sim_terminate)
-            return 0;
-        ready = false;
+            exit(-1);
     #endif
 
     /* Q <-- V */
@@ -91,16 +100,12 @@ Prim::PrimMinSpanningTree(int (*weight)(unsigned u, unsigned v),
             goto cleanup;
         }
     }
-    #ifdef WITH_GUI // finished Q <-- V
-        MUTEX_AC(sp, run_mode);
-        if (run_mode == RUN)
-            this_thread::sleep_for(chrono::milliseconds(MILLISEC / sp));
-        sigEvent(SIG_PRIM_STEP_FINISHED);
-        while (!ready)
-            cv.wait(u_lock);
+    #ifdef WITH_GUI // finished FibHeap construction
+        syncGUI(SIG_PRIM_STEP_FINISHED);
+
+        /* unexpected error occurred */
         if (sim_terminate)
-            return 0;
-        ready = false;
+            exit(-1);
     #endif
 
     /* find minimum spanning tree (set of edges) */
@@ -113,18 +118,13 @@ Prim::PrimMinSpanningTree(int (*weight)(unsigned u, unsigned v),
                                          " value node"));
             goto cleanup;
         }
-        #ifdef WITH_GUI // finished Extract_miin(Q)
-            MUTEX_AC(sp, run_mode);
-            if (run_mode == RUN)
-                this_thread::sleep_for(chrono::milliseconds(MILLISEC / sp));
-            sigEvent(SIG_PRIM_STEP_FINISHED);
-            while (!ready)
-                cv.wait(u_lock);
-            if (sim_terminate)
-                return 0;
-            ready = false;
-        #endif
+        #ifdef WITH_GUI // finished Extract-Min(Q)
+            syncGUI(SIG_PRIM_STEP_FINISHED);
 
+            /* unexpected error occurred */
+            if (sim_terminate)
+                exit(-1);
+        #endif
 
         /* if pi[u] then A = A U (u, pi[u]) */
         if (pi[u->id]) {
@@ -133,18 +133,14 @@ Prim::PrimMinSpanningTree(int (*weight)(unsigned u, unsigned v),
             this->mst_cost += weight(u->id,pi[u->id]->id);
         }
         #ifdef WITH_GUI // finished A U (u, pi[u])
-            MUTEX_AC(sp, run_mode);
-            if (run_mode == RUN)
-                this_thread::sleep_for(chrono::milliseconds(MILLISEC / sp));
-            sigEvent(SIG_PRIM_STEP_FINISHED);
-            while (!ready)
-                cv.wait(u_lock);
+            syncGUI(SIG_PRIM_STEP_FINISHED);
+
+            /* unexpected error occurred */
             if (sim_terminate)
-                return 0;
-            ready = false;
+                exit(-1);
         #endif
 
-        /* for each v in Adj[u] */
+            /* for each v in Adj[u] */
         for (i = 1; i < this->adj[u->id].size(); i++) {
             v = this->adj[u->id][i];
             unsigned uid = u->id;
@@ -153,31 +149,16 @@ Prim::PrimMinSpanningTree(int (*weight)(unsigned u, unsigned v),
             /* if v in Q and w(u,v) < key[v] */
             if ((v = fib_heap->FibFindNode(vid)) &&
                  (w = weight(uid, vid)) < v->key) {
-                #ifdef WITH_GUI // finished if condition
-                    MUTEX_AC(sp, run_mode);
-                    if (run_mode == RUN)
-                        this_thread::sleep_for(chrono::milliseconds(MILLISEC / sp));
-                    sigEvent(SIG_PRIM_STEP_FINISHED);
-                    while (!ready)
-                        cv.wait(u_lock);
-                    if (sim_terminate)
-                        return 0;
-                    ready = false;
-                #endif
 
                 /* pi[v] <-- u; key[v] <-- w(u,v) */
                 pi[vid] = u;
                 fib_heap->FibDecreaseKey(v, w);
-                #ifdef WITH_GUI // finished assignements
-                    MUTEX_AC(sp, run_mode);
-                    if (run_mode == RUN)
-                        this_thread::sleep_for(chrono::milliseconds(MILLISEC / sp));
-                    sigEvent(SIG_PRIM_STEP_FINISHED);
-                    while (!ready)
-                        cv.wait(u_lock);
+                #ifdef WITH_GUI // finished Decrease key
+                    syncGUI(SIG_PRIM_STEP_FINISHED);
+
+                    /* unexpected error occurred */
                     if (sim_terminate)
-                        return 0;
-                    ready = false;
+                        exit(-1);
                 #endif
             }
         }
@@ -222,7 +203,7 @@ Prim::PrimAddVertex(unsigned id)
     else
         node = fib_heap->FibCreateNode(id);
     if (node) {
-        /* if for some reason user randomly chooses ID, we fill the Nodeset
+        /* if for some reason user randomly chooses ID, we fill the nodeset
          * with blanks
          */
         if (id > this->next_id) {
@@ -246,7 +227,7 @@ Prim::PrimAddVertex(unsigned id)
 int
 Prim::PrimAddEdge(unsigned u, unsigned v)
 {
-
+    /* check for unexpected edge */
     if (u >= this->next_id || v >= this->next_id) {
         char buf[100];
         sprintf(buf, "failed to insert edge (%d,%d): invalid edge", u,v);
@@ -255,7 +236,7 @@ Prim::PrimAddEdge(unsigned u, unsigned v)
     }
 
     /* check for conflicting edges */
-    for (vector<tuple<int, int>>::iterator it = this->edges.begin();
+    for (vector<tuple<unsigned, unsigned>>::iterator it = this->edges.begin();
          it != this->edges.end();
          ++it) {
         unsigned my_u, my_v;
