@@ -78,10 +78,6 @@ Prim::PrimMinSpanningTree(int (*weight)(unsigned u, unsigned v),
         NEXT_LINE(++line);
         syncGUI(SIG_NEXT_LINE);
         tmp_line[0] = line;
-
-        /* unexpected error occurred */
-        if (sim_terminate)
-            exit(-1);
     #endif
 
     /* properly initialize Fibonacci heap */
@@ -90,10 +86,6 @@ Prim::PrimMinSpanningTree(int (*weight)(unsigned u, unsigned v),
             line = tmp_line[0];
             NEXT_LINE(line);
             syncGUI(SIG_NEXT_LINE);
-
-            /* unexpected error occurred */
-            if (sim_terminate)
-                exit(-1);
         #endif
 
         if (!this->adj[i][0])
@@ -102,10 +94,6 @@ Prim::PrimMinSpanningTree(int (*weight)(unsigned u, unsigned v),
         #ifdef WITH_GUI
             NEXT_LINE(++line);
             syncGUI(SIG_NEXT_LINE);
-
-            /* unexpected error occurred */
-            if (sim_terminate)
-                exit(-1);
         #endif
 
         this->adj[i][0]->key = INT_MAX;
@@ -114,30 +102,18 @@ Prim::PrimMinSpanningTree(int (*weight)(unsigned u, unsigned v),
             NEXT_LINE(++line);
             syncGUI(SIG_PRIM_STEP_FINISHED);
             syncGUI(SIG_NEXT_LINE);
-
-            /* unexpected error occurred */
-            if (sim_terminate)
-                exit(-1);
         #endif
 
         pi[this->adj[i][0]->id] = NULL;
 
         #ifdef WITH_GUI // finished Fibonacci init
             syncGUI(SIG_PRIM_STEP_FINISHED);
-
-            /* unexpected error occurred */
-            if (sim_terminate)
-                exit(-1);
         #endif
     }
 
     #ifdef WITH_GUI
         NEXT_LINE(++line);
         syncGUI(SIG_NEXT_LINE);
-
-        /* unexpected error occurred */
-        if (sim_terminate)
-            exit(-1);
     #endif
 
     /* r.key = 0 */
@@ -146,10 +122,6 @@ Prim::PrimMinSpanningTree(int (*weight)(unsigned u, unsigned v),
         NEXT_LINE(++line);
         syncGUI(SIG_PRIM_STEP_FINISHED);
         syncGUI(SIG_NEXT_LINE);
-
-        /* unexpected error occurred */
-        if (sim_terminate)
-            exit(-1);
     #endif
 
     /* Q <-- V */
@@ -168,10 +140,6 @@ Prim::PrimMinSpanningTree(int (*weight)(unsigned u, unsigned v),
         NEXT_LINE(++line);
         tmp_line[0] = line;
         syncGUI(SIG_NEXT_LINE);
-
-        /* unexpected error occurred */
-        if (sim_terminate)
-            exit(-1);
     #endif
 
     /* find minimum spanning tree (set of edges) */
@@ -180,19 +148,11 @@ Prim::PrimMinSpanningTree(int (*weight)(unsigned u, unsigned v),
             line = tmp_line[0];
             NEXT_LINE(line);
             syncGUI(SIG_NEXT_LINE);
-
-            /* unexpected error occurred */
-            if (sim_terminate)
-                exit(-1);
         #endif
 
         #ifdef WITH_GUI
             NEXT_LINE(++line);
             syncGUI(SIG_NEXT_LINE);
-
-            /* unexpected error occurred */
-            if (sim_terminate)
-                exit(-1);
         #endif
 
         /* u <- Extract-Min(Q) */
@@ -206,10 +166,6 @@ Prim::PrimMinSpanningTree(int (*weight)(unsigned u, unsigned v),
             NEXT_LINE(++line);
             syncGUI(SIG_MIN_EXTRACTED, u->id);
             syncGUI(SIG_NEXT_LINE);
-
-            /* unexpected error occurred */
-            if (sim_terminate)
-                exit(-1);
         #endif
 
         /* if pi[u] then A = A U (u, pi[u]) */
@@ -218,10 +174,6 @@ Prim::PrimMinSpanningTree(int (*weight)(unsigned u, unsigned v),
             #ifdef WITH_GUI
                 NEXT_LINE(++line);
                 syncGUI(SIG_NEXT_LINE);
-
-                /* unexpected error occurred */
-                if (sim_terminate)
-                    exit(-1);
             #endif
 
             this->min_spanning_tree.push_back(make_tuple(u->id,
@@ -229,10 +181,6 @@ Prim::PrimMinSpanningTree(int (*weight)(unsigned u, unsigned v),
             this->mst_cost += weight(u->id,pi[u->id]->id);
             #ifdef WITH_GUI // finished A U (u, pi[u])
                 syncGUI(SIG_MST_UPDATED, u->id, pi[u->id]->id);
-
-                /* unexpected error occurred */
-                if (sim_terminate)
-                    exit(-1);
             #endif
         }
         #ifdef WITH_GUI
@@ -244,10 +192,6 @@ Prim::PrimMinSpanningTree(int (*weight)(unsigned u, unsigned v),
             NEXT_LINE(++line);
             tmp_line[1] = line;
             syncGUI(SIG_NEXT_LINE);
-
-            /* unexpected error occurred */
-            if (sim_terminate)
-                exit(-1);
         #endif
 
         /* for each v in Adj[u] */
@@ -256,10 +200,6 @@ Prim::PrimMinSpanningTree(int (*weight)(unsigned u, unsigned v),
                 line = tmp_line[1];
                 NEXT_LINE(line);
                 syncGUI(SIG_NEXT_LINE);
-
-                /* unexpected error occurred */
-                if (sim_terminate)
-                    exit(-1);
             #endif
 
             v = this->adj[u->id][i];
@@ -270,10 +210,6 @@ Prim::PrimMinSpanningTree(int (*weight)(unsigned u, unsigned v),
             #ifdef WITH_GUI
                 NEXT_LINE(++line);
                 syncGUI(SIG_NEXT_LINE);
-
-                /* unexpected error occurred */
-                if (sim_terminate)
-                    exit(-1);
             #endif
 
             /* if v in Q and w(u,v) < key[v] */
@@ -283,10 +219,6 @@ Prim::PrimMinSpanningTree(int (*weight)(unsigned u, unsigned v),
                 #ifdef WITH_GUI
                     NEXT_LINE(++line);
                     syncGUI(SIG_NEXT_LINE);
-
-                    /* unexpected error occurred */
-                    if (sim_terminate)
-                        exit(-1);
                 #endif
 
                 /* pi[v] <-- u */
@@ -295,20 +227,12 @@ Prim::PrimMinSpanningTree(int (*weight)(unsigned u, unsigned v),
                 #ifdef WITH_GUI
                     NEXT_LINE(++line);
                     syncGUI(SIG_NEXT_LINE);
-
-                    /* unexpected error occurred */
-                    if (sim_terminate)
-                        exit(-1);
                 #endif
 
                 /* key[v] <-- w(u,v) */
                 fib_heap->FibDecreaseKey(v, w);
                 #ifdef WITH_GUI // finished Decrease key
                     syncGUI(SIG_PRIM_STEP_FINISHED);
-
-                    /* unexpected error occurred */
-                    if (sim_terminate)
-                        exit(-1);
                 #endif
             }
         }

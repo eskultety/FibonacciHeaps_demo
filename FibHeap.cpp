@@ -72,8 +72,6 @@ FibHeap::FibInsertNode(FibNodePtr node)
     this->numNodes++;
     #ifdef WITH_GUI
         syncGUI(SIG_FIB_STEP_FINISHED);
-        if (sim_terminate)
-            exit(-1);
     #endif
     return 0;
 }
@@ -120,8 +118,6 @@ FibHeap::FibExtractMin()
 
                 #ifdef WITH_GUI
                     syncGUI(SIG_FIB_STEP_FINISHED);
-                    if (sim_terminate)
-                        exit(-1);
                 #endif
 
             } while(child != ptr);
@@ -138,15 +134,11 @@ FibHeap::FibExtractMin()
 
             #ifdef WITH_GUI
                 syncGUI(SIG_FIB_STEP_FINISHED);
-                if (sim_terminate)
-                    exit(-1);
             #endif
             this->FibConsolidate();
         }
         #ifdef WITH_GUI
             syncGUI(SIG_FIB_STEP_FINISHED);
-            if (sim_terminate)
-                exit(-1);
         #endif
         this->numNodes--;
     }
@@ -195,9 +187,7 @@ FibHeap::FibConsolidate()
                 ptr = ptr_x;
 
             #ifdef WITH_GUI
-                syncGUI(SIG_FIB_STEP_FINISHED);
-                if (sim_terminate)
-                    exit(-1);
+                syncGUI(SIG_AX_STEP_FINISHED);
             #endif
 
             /* make y child of x */
@@ -206,9 +196,7 @@ FibHeap::FibConsolidate()
             deg++;
 
             #ifdef WITH_GUI
-                syncGUI(SIG_FIB_STEP_FINISHED);
-                if (sim_terminate)
-                    exit(-1);
+                syncGUI(SIG_AX_STEP_FINISHED);
             #endif
         }
 
@@ -232,23 +220,28 @@ FibHeap::FibConsolidate()
 
                 #ifdef WITH_GUI
                     syncGUI(SIG_FIB_STEP_FINISHED);
-                    if (sim_terminate)
-                        exit(-1);
                 #endif
 
             } else {
                 this->FibMoveToRoot(ax_array[i]);
+
+                #ifdef WITH_GUI
+                    syncGUI(SIG_AX_STEP_FINISHED);
+                #endif
+
                 if (ax_array[i]->key < ptr->key)
                     this->min = ax_array[i];
+
                 #ifdef WITH_GUI
                     syncGUI(SIG_FIB_STEP_FINISHED);
-                    if (sim_terminate)
-                        exit(-1);
                 #endif
             }
-        }       
+        }
     }
 
+    #ifdef WITH_GUI
+    this->ax = nullptr;
+    #endif
     return 0;
 }
 
@@ -280,9 +273,7 @@ FibHeap::FibHeapLink(FibNodePtr y, FibNodePtr x)
     y->mark = false;
 
     #ifdef WITH_GUI
-        syncGUI(SIG_FIB_STEP_FINISHED);
-        if (sim_terminate)
-            exit(-1);
+        syncGUI(SIG_AX_STEP_FINISHED);
     #endif
     return 0;
 }
@@ -311,8 +302,6 @@ FibHeap::FibDecreaseKey(FibNodePtr x, int key)
 
     #ifdef WITH_GUI
         syncGUI(SIG_FIB_STEP_FINISHED);
-        if (sim_terminate)
-            exit(-1);
     #endif
 
     if (y && (x->key < y->key)) {
@@ -348,8 +337,6 @@ FibHeap::FibCut(FibNodePtr x, FibNodePtr y)
 
     #ifdef WITH_GUI
         syncGUI(SIG_FIB_STEP_FINISHED);
-        if (sim_terminate)
-            exit(-1);
     #endif
 
     // add x to the root list of H
@@ -357,8 +344,6 @@ FibHeap::FibCut(FibNodePtr x, FibNodePtr y)
 
     #ifdef WITH_GUI
         syncGUI(SIG_FIB_STEP_FINISHED);
-        if (sim_terminate)
-            exit(-1);
     #endif
 
     y->degree--;
@@ -367,8 +352,6 @@ FibHeap::FibCut(FibNodePtr x, FibNodePtr y)
 
     #ifdef WITH_GUI
         syncGUI(SIG_FIB_STEP_FINISHED);
-        if (sim_terminate)
-            exit(-1);
     #endif
     return 0;
 }
@@ -386,8 +369,6 @@ FibHeap::FibCascadingCut(FibNodePtr y)
 
         #ifdef WITH_GUI
             syncGUI(SIG_FIB_STEP_FINISHED);
-            if (sim_terminate)
-                exit(-1);
         #endif
 
     } else {
