@@ -53,6 +53,7 @@ void simulation(unsigned root)
 SimulationDialog::SimulationDialog(unsigned m_root_id, QWidget *parent) :
     QDialog(parent), ui(new Ui::SimulationDialog)
 {
+    thread_finished = false;
     root_id = m_root_id;
     initSimulation();
     running = false;
@@ -305,6 +306,8 @@ void SimulationDialog::on_pushButton_clicked()
     shared_mtx.unlock();
 
     running = true;
+    thread_finished = false;
+    ui->pushButton_2->setText("Pause");
 
     continueSimulation();
 }
@@ -312,8 +315,23 @@ void SimulationDialog::on_pushButton_clicked()
 // Step forward
 void SimulationDialog::on_pushButton_2_clicked()
 {
-    if (running || step_in_progress)
+    if (step_in_progress)
         return;
+
+    shared_mtx.lock();
+        mode = STEP;
+    shared_mtx.unlock();
+    step_in_progress = true;
+    thread_finished = false;
+    ui->pushButton_2->setText("Step");
+
+    if (running)
+    {
+        ui->verticalSlider->setEnabled(true);
+        running = false;
+        stepping = true;
+        return;
+    }
 
     if (!stepping)
     {
@@ -322,12 +340,6 @@ void SimulationDialog::on_pushButton_2_clicked()
         drawGraph();
         scene2->clear();
     }
-
-    shared_mtx.lock();
-        mode = STEP;
-    shared_mtx.unlock();
-
-    step_in_progress = true;
 
     continueSimulation();
 }
@@ -351,6 +363,8 @@ void SimulationDialog::sig_backend(int signum)
         break;
     case SIG_FINISHED_ALL:
         ui->verticalSlider->setEnabled(true);
+        ui->pushButton_2->setText("Step");
+        thread_finished = true;
         running = false;
         stepping = false;
         initPrimCode();
@@ -524,6 +538,9 @@ void SimulationDialog::on_verticalSlider_valueChanged(int value)
 
 void SimulationDialog::sigExit()
 {
-    QMessageBox::information(0, "Simulator", "Simulation interrupted, exiting.");
-    std::raise(SIGINT);
+    if (!thread_finished)
+    {
+        QMessageBox::information(0, "Simulator", "Simulation interrupted, exiting.");
+        std::raise(SIGINT);
+    }
 }

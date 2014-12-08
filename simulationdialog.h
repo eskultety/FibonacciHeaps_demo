@@ -57,6 +57,7 @@ private:
     bool running;
     bool step_in_progress;
     bool stepping;
+    bool thread_finished;
     unsigned root_id;
 
     QStringList prim_code;
