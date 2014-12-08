@@ -59,13 +59,11 @@ FibHeap::FibMoveToRoot(FibNodePtr node)
 int
 FibHeap::FibInsertNode(FibNodePtr node)
 {
-    FibNodePtr heap_min = this->min;
-
-    if (!heap_min) {
+    if (!this->min) {
         this->min = node;
     } else {
         this->FibMoveToRoot(node);
-        if (node->key < heap_min->key)
+        if (node->key < this->min->key)
             this->min = node;
     }
 
@@ -129,6 +127,10 @@ FibHeap::FibExtractMin()
 
         if (heap_min == heap_min->right) {
             this->min = nullptr;
+
+            #ifdef WITH_GUI
+                syncGUI(SIG_FIB_STEP_FINISHED);
+            #endif
         } else {
             this->min = heap_min->right;
 
@@ -137,9 +139,7 @@ FibHeap::FibExtractMin()
             #endif
             this->FibConsolidate();
         }
-        #ifdef WITH_GUI
-            syncGUI(SIG_FIB_STEP_FINISHED);
-        #endif
+
         this->numNodes--;
     }
 
@@ -150,7 +150,7 @@ int
 FibHeap::FibConsolidate()
 {
     FibNodePtr ptr = this->min;
-    FibNodePtr ptr_x = ptr;
+    FibNodePtr ptr_x = this->min;
     FibNodePtr ptr_y = nullptr;
     double phi = ((1 + sqrt(5)) / 2); // golden ratio used for logarithm base
     int deg = -1;
@@ -186,11 +186,13 @@ FibHeap::FibConsolidate()
              * of which nodes still need to be procesed, as by linking
              * we do update all pointers.
              */
-            if (ptr == ptr_y)
+            if (ptr == ptr_y) {
                 ptr = ptr_x;
+                this->min = ptr;
+            }
 
             #ifdef WITH_GUI
-                syncGUI(SIG_AX_STEP_FINISHED);
+                syncGUI(SIG_FIB_STEP_FINISHED);
             #endif
 
             /* make y child of x */
@@ -199,7 +201,7 @@ FibHeap::FibConsolidate()
             deg++;
 
             #ifdef WITH_GUI
-                syncGUI(SIG_AX_STEP_FINISHED);
+                syncGUI(SIG_FIB_STEP_FINISHED);
             #endif
         }
 
@@ -229,7 +231,7 @@ FibHeap::FibConsolidate()
                 this->FibMoveToRoot(ax_array[i]);
 
                 #ifdef WITH_GUI
-                    syncGUI(SIG_AX_STEP_FINISHED);
+                    syncGUI(SIG_FIB_STEP_FINISHED);
                 #endif
 
                 if (ax_array[i]->key < ptr->key)
@@ -243,7 +245,7 @@ FibHeap::FibConsolidate()
     }
 
     #ifdef WITH_GUI
-    this->ax = nullptr;
+    //this->ax = nullptr;
     #endif
     return 0;
 }
@@ -276,7 +278,7 @@ FibHeap::FibHeapLink(FibNodePtr y, FibNodePtr x)
     y->mark = false;
 
     #ifdef WITH_GUI
-        syncGUI(SIG_AX_STEP_FINISHED);
+        syncGUI(SIG_FIB_STEP_FINISHED);
     #endif
     return 0;
 }
@@ -284,7 +286,6 @@ FibHeap::FibHeapLink(FibNodePtr y, FibNodePtr x)
 int
 FibHeap::FibDecreaseKey(FibNodePtr x, int key)
 {
-    FibNodePtr heap_min = this->min;
     FibNodePtr y = nullptr;
     int ret = -1;
     char buf[100] = {0};
@@ -312,7 +313,7 @@ FibHeap::FibDecreaseKey(FibNodePtr x, int key)
         this->FibCascadingCut(y);
     }
 
-    if (x->key < heap_min->key)
+    if (x->key < this->min->key)
         this->min = x;
 
     #ifdef WITH_GUI
