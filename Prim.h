@@ -22,8 +22,13 @@ class Prim {
                                 unsigned root);
         int PrimGetMSTCost(void) { return mst_cost; }
         EdgeSet& PrimGetMST(void) { return min_spanning_tree; }
+
+        #ifdef WITH_GUI
         bool PrimGetStatus(void) { return status_finished; }
-        FibNodePtr PrimGetHeapMin(void);
+        FibNodePtr PrimGetHeapMin(void);\
+        std::vector<FibNodePtr>* PrimGetAx(void);
+        #endif
+
 
         class PrimException: public std::exception
         {
