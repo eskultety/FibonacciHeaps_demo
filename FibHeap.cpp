@@ -128,17 +128,18 @@ FibHeap::FibExtractMin()
             this->min = nullptr;
         } else {
             this->min = heap_min->right;
+
+            #ifdef WITH_GUI
+                syncGUI(SIG_FIB_STEP_FINISHED);
+                if (sim_terminate)
+                    exit(-1);
+            #endif
             this->FibConsolidate();
         }
 
         this->numNodes--;
     }
 
-    #ifdef WITH_GUI
-        syncGUI(SIG_FIB_STEP_FINISHED);
-        if (sim_terminate)
-            exit(-1);
-    #endif
     return heap_min;
 }
 
@@ -210,12 +211,12 @@ FibHeap::FibConsolidate()
                 if (ax_array[i]->key < ptr->key)
                     this->min = ax_array[i];
             }
-        }
-        #ifdef WITH_GUI
-            syncGUI(SIG_FIB_STEP_FINISHED);
-            if (sim_terminate)
-                exit(-1);
-        #endif
+            #ifdef WITH_GUI
+                syncGUI(SIG_FIB_STEP_FINISHED);
+                if (sim_terminate)
+                    exit(-1);
+            #endif
+        }       
     }
 
     return 0;
