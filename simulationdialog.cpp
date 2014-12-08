@@ -231,6 +231,8 @@ qreal SimulationDialog::drawHeapTree(FibNodePtr fb, qreal x)
         if (x_local_max > x_shift)
             x_shift = x_local_max;
         ptr = ptr->parent;
+        if (!ptr)
+            return x_shift;
         y -= shift;
     }
 
