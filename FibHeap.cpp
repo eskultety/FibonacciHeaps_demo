@@ -161,6 +161,9 @@ FibHeap::FibConsolidate()
 
     /* auxiliary array to keep track of roots according to their degrees */
     vector<FibNodePtr> ax_array(max_degree, nullptr);
+    #ifdef WITH_GUI
+    this->ax = &ax_array;
+    #endif
 
     if (!ptr || ptr == ptr->right)
         return 0;
