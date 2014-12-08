@@ -3,7 +3,7 @@
 
 
 Prim *prim;
-PrimSignal psignal;
+PrimSignal prim_signal;
 
 
 int weight(unsigned u, unsigned v)
@@ -22,7 +22,7 @@ int weight(unsigned u, unsigned v)
 
 void sigEvent(int sig, unsigned u, unsigned v)
 {
-    psignal.qSigEvent(sig, u, v);
+    prim_signal.qSigEvent(sig, u, v);
 }
 
 void signal_handler(int signum)
@@ -58,7 +58,7 @@ SimulationDialog::SimulationDialog(unsigned m_root_id, QWidget *parent) :
     running = false;
     step_in_progress = false;
     stepping = false;
-    connect(&psignal, SIGNAL(sig(int)), this, SLOT(sig_backend(int)));
+    connect(&prim_signal, SIGNAL(sig(int)), this, SLOT(sig_backend(int)));
     connect(this, SIGNAL(rejected()), this, SLOT(sigExit()));
 
     ui->setupUi(this);
@@ -334,8 +334,8 @@ void SimulationDialog::on_pushButton_2_clicked()
 
 void SimulationDialog::sig_backend(int signum)
 {
-    unsigned u = psignal.getU();
-    unsigned v = psignal.getV();
+    unsigned u = prim_signal.getU();
+    unsigned v = prim_signal.getV();
 
     switch (signum)
     {

@@ -112,8 +112,8 @@ Prim::PrimMinSpanningTree(int (*weight)(unsigned u, unsigned v),
 
         #ifdef WITH_GUI
             NEXT_LINE(++line);
-            syncGUI(SIG_NEXT_LINE);
             syncGUI(SIG_PRIM_STEP_FINISHED);
+            syncGUI(SIG_NEXT_LINE);
 
             /* unexpected error occurred */
             if (sim_terminate)
