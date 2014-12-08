@@ -144,9 +144,117 @@ void SimulationDialog::exitError(QString msg)
     this->close();
 }
 
-void SimulationDialog::drawHeap(FibNodePtr fb)
+void SimulationDialog::drawHeapNode(FibNodePtr fb, qreal x, qreal y)
 {
-    // TODO: drawing fibonacci heaps into scene2
+    QString tmp_key;
+    QGraphicsTextItem *txt_key = new QGraphicsTextItem(0, scene2);
+    txt_key->setFont(QFont("Helvetica", 12, QFont::Bold));
+    txt_key->setZValue(3);
+    txt_key->setPos(x, y);
+    if (fb->key == INT_MIN)
+        tmp_key = QString();
+    else if (fb->key == INT_MAX)
+        tmp_key = QString::fromUtf8("\u221e");
+    else
+        tmp_key = QString::number(fb->key);
+    txt_key->setPlainText(tmp_key);
+
+    QGraphicsEllipseItem *el = new QGraphicsEllipseItem(x, y,
+                                                        diameter, diameter,
+                                                        0, scene2);
+    el->setPen(blackpen);
+    el->setZValue(2);
+    if (fb->mark)
+        el->setBrush(QBrush(Qt::darkCyan));
+    else
+        el->setBrush(QBrush(Qt::yellow));
+}
+
+void SimulationDialog::drawHeapLine(bool dashed, qreal x1, qreal y1,
+                                    qreal x2, qreal y2)
+{
+    QLineF li(QPointF(x1, y1), QPointF(x2, y2));
+    line = new QGraphicsLineItem(li, 0, scene2);
+    QPen pen = QPen(Qt::black, 2, Qt::SolidLine);
+    if (dashed)
+        pen.setStyle(Qt::DashLine);
+    line->setPen(pen);
+}
+
+qreal SimulationDialog::drawHeapNeighbours(FibNodePtr fb, qreal max_x, qreal y)
+{
+    qreal x = max_x;
+    FibNodePtr begin = fb;
+    FibNodePtr ptr = fb->right;
+
+    // draw all neighbours of fb children except fb neighbours
+    while (ptr != begin)
+    {
+        x += shift;
+        drawHeapLine(false, x+radius, y+radius, x-shift+radius, y+radius);
+        drawHeapNode(ptr, x, y);
+        ptr = ptr->right;
+    }
+
+    return x;
+}
+
+qreal SimulationDialog::drawHeapTree(FibNodePtr fb, qreal x)
+{
+    qreal x_shift = x;
+    qreal x_local_max;
+    qreal y = shift;
+
+    FibNodePtr last_child = NULL;
+    FibNodePtr ptr = fb;
+
+    // draw fb and all its children
+    while (ptr != NULL)
+    {
+        drawHeapNode(ptr, x, y);
+
+        last_child = ptr;
+        ptr = ptr->child;
+        y += shift;
+    }
+
+    y -= shift;
+    ptr = last_child;
+    while (ptr != fb)
+    {
+        drawHeapLine(false, x+radius, y+radius, x+radius, y-shift+radius);
+        x_local_max = drawHeapNeighbours(ptr, x, y);
+        if (x_local_max > x_shift)
+            x_shift = x_local_max;
+        ptr = ptr->parent;
+        y -= shift;
+    }
+
+    return x_shift;
+}
+
+void SimulationDialog::drawHeap(FibNodePtr min)
+{
+    if (min == NULL)
+    {
+        scene2->clear();
+        return;
+    }
+
+    scene2->clear();
+    qreal max_x = shift;
+    qreal y = shift;
+    FibNodePtr ptr = min;
+
+    do
+    {
+        if (ptr != min)
+            drawHeapLine(true, max_x+radius, y+radius,
+                         max_x-shift+radius, y+radius);
+        max_x = drawHeapTree(ptr, max_x);
+        max_x += shift;
+        ptr = ptr->right;
+    } while (ptr != min);
 }
 
 // Run simulation
@@ -159,6 +267,7 @@ void SimulationDialog::on_pushButton_clicked()
     {
         resetColors();
         drawGraph();
+        scene2->clear();
     }
 
     ui->verticalSlider->setEnabled(false);
@@ -183,6 +292,7 @@ void SimulationDialog::on_pushButton_2_clicked()
         stepping = true;
         resetColors();
         drawGraph();
+        scene2->clear();
     }
 
     shared_mtx.lock();

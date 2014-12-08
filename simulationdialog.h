@@ -41,7 +41,11 @@ private:
     void initSimulation();
     void continueSimulation(bool cont=true);
     void exitError(QString msg);
-    void drawHeap(FibNodePtr fb);
+    void drawHeapNode(FibNodePtr fb, qreal x, qreal y);
+    void drawHeapLine(bool dashed, qreal x1, qreal y1, qreal x2, qreal y2);
+    qreal drawHeapNeighbours(FibNodePtr fb, qreal max_x, qreal y);
+    qreal drawHeapTree(FibNodePtr fb, qreal x);
+    void drawHeap(FibNodePtr min);
     void drawGraph();
     void actualizeGraph(unsigned u, unsigned v);
     void initPrimCode();
@@ -67,6 +71,7 @@ private:
     QLineF *new_line;
     const qreal diameter = 30;
     const qreal radius = 15;
+    const qreal shift = 70;
 };
 
 #endif // SIMULATIONDIALOG_H
