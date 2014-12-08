@@ -218,6 +218,10 @@ qreal SimulationDialog::drawHeapTree(FibNodePtr fb, qreal x)
         y += shift;
     }
 
+    if (last_child == NULL)
+        return x_shift;
+
+    // process all last_child parents
     y -= shift;
     ptr = last_child;
     while (ptr != fb)
@@ -243,16 +247,20 @@ void SimulationDialog::drawHeap(FibNodePtr min)
 
     scene2->clear();
     qreal max_x = shift;
+    qreal prev_x;
     qreal y = shift;
     FibNodePtr ptr = min;
 
     do
     {
         if (ptr != min)
-            drawHeapLine(true, max_x+radius, y+radius,
-                         max_x-shift+radius, y+radius);
+            drawHeapLine(true, prev_x+radius, y+radius,
+                         max_x+radius, y+radius);
+
+        prev_x = max_x;
         max_x = drawHeapTree(ptr, max_x);
         max_x += shift;
+
         ptr = ptr->right;
     } while (ptr != min);
 }
