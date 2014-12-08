@@ -28,12 +28,12 @@ void sigEvent(int sig, unsigned u, unsigned v)
 void simulation(unsigned root)
 {
     std::unique_lock<std::mutex> u_lock(uni_mtx);
-    while (!ready)
+    while (!ready && !sim_terminate)
         cv.wait(u_lock);
     ready = false;
-    u_lock.unlock();
     if (sim_terminate)
         return;
+    u_lock.unlock();
     try {
         prim->PrimMinSpanningTree(weight, root);
     } catch (Prim::PrimException &e) {
@@ -92,12 +92,11 @@ SimulationDialog::SimulationDialog(unsigned m_root_id, QWidget *parent) :
 
 SimulationDialog::~SimulationDialog()
 {
-    sim_terminate = true;
-
-    continueSimulation();
+    continueSimulation(false);
 
     delete ui;
-    Simulation.join();
+    Simulation->join();
+    delete Simulation;
 
     delete prim;
     sim_terminate = false;
@@ -113,7 +112,6 @@ void SimulationDialog::initSimulation()
     {
         if ((ptr = prim->PrimAddVertex( p->id() )) == NULL)
             exitError("Error in backend: On adding FibNodePtr.");
-
         p->setFibNode(ptr);
     }
 
@@ -127,12 +125,14 @@ void SimulationDialog::initSimulation()
     }
 
     prim_pos = 0;
-    Simulation = std::thread(simulation, root_id);
+    Simulation = new std::thread(simulation, root_id);
 }
 
-void SimulationDialog::continueSimulation()
+void SimulationDialog::continueSimulation(bool cont)
 {
     std::unique_lock<std::mutex> u_lock(uni_mtx);
+    if (!cont)
+        sim_terminate = true;
     ready = true;
     cv.notify_one();
     u_lock.unlock();
@@ -144,14 +144,22 @@ void SimulationDialog::exitError(QString msg)
     this->close();
 }
 
+void SimulationDialog::drawHeap(FibNodePtr fb)
+{
+    // TODO: drawing fibonacci heaps into scene2
+}
+
 // Run simulation
 void SimulationDialog::on_pushButton_clicked()
 {
     if (running || step_in_progress)
         return;
 
-    resetColors();
-    drawGraph();
+    if (!stepping)
+    {
+        resetColors();
+        drawGraph();
+    }
 
     ui->verticalSlider->setEnabled(false);
 
@@ -199,6 +207,7 @@ void SimulationDialog::sig_backend(int signum)
             continueSimulation();
         break;
     case SIG_FIB_STEP_FINISHED:
+        drawHeap(prim->PrimGetHeapMin());
         if (running)
             continueSimulation();
         break;
@@ -212,7 +221,8 @@ void SimulationDialog::sig_backend(int signum)
 
         std::cerr << "Min.: " << prim->PrimGetMSTCost() << std::endl;
 
-        Simulation.join();
+        Simulation->join();
+        delete Simulation;
         delete prim;
         initSimulation();
         break;

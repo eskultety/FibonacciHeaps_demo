@@ -39,15 +39,16 @@ private slots:
 
 private:
     void initSimulation();
-    void continueSimulation();
+    void continueSimulation(bool cont=true);
     void exitError(QString msg);
+    void drawHeap(FibNodePtr fb);
     void drawGraph();
     void actualizeGraph(unsigned u, unsigned v);
     void initPrimCode();
     void printPrimCode(bool actualize);
     void resetColors();
 
-    std::thread Simulation;
+    std::thread *Simulation;
     bool running;
     bool step_in_progress;
     bool stepping;

@@ -112,6 +112,15 @@ void MainWindow::on_pushButton_4_clicked()
     simdlg->exec();
 
     delete simdlg;
+
+    // reset graph colors
+    foreach (gEdge *e, glob_edges)
+    {
+        e->getFrom()->setBrushYellow();
+        e->getTo()->setBrushYellow();
+        e->setPenBlack();
+    }
+
     ui->graphicsView->clearView();
     ui->graphicsView->redrawView();
 }
