@@ -36,6 +36,7 @@ private slots:
     void on_pushButton_2_clicked();
     void sig_backend(int signum);
     void on_verticalSlider_valueChanged(int value);
+    void sigExit();
 
 private:
     void initSimulation();

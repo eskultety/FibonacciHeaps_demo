@@ -5,6 +5,7 @@
 #include <mutex>
 #include <thread>
 #include <condition_variable>
+#include <csignal>
 
 #define MILLISEC 1000 // 1 second
 

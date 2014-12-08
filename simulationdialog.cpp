@@ -25,8 +25,15 @@ void sigEvent(int sig, unsigned u, unsigned v)
     psignal.qSigEvent(sig, u, v);
 }
 
+void signal_handler(int signum)
+{
+    if (signum == SIGINT)
+        exit(-1);
+}
+
 void simulation(unsigned root)
 {
+    std::signal(SIGINT, signal_handler);
     std::unique_lock<std::mutex> u_lock(uni_mtx);
     while (!ready && !sim_terminate)
         cv.wait(u_lock);
@@ -52,6 +59,7 @@ SimulationDialog::SimulationDialog(unsigned m_root_id, QWidget *parent) :
     step_in_progress = false;
     stepping = false;
     connect(&psignal, SIGNAL(sig(int)), this, SLOT(sig_backend(int)));
+    connect(this, SIGNAL(rejected()), this, SLOT(sigExit()));
 
     ui->setupUi(this);
 
@@ -158,6 +166,16 @@ void SimulationDialog::drawHeapNode(FibNodePtr fb, qreal x, qreal y)
     else
         tmp_key = QString::number(fb->key);
     txt_key->setPlainText(tmp_key);
+
+    if (fb == prim->PrimGetHeapMin())
+    {
+        txt_key = new QGraphicsTextItem(0, scene2);
+        txt_key->setFont(QFont("Helvetica", 12, QFont::Bold));
+        txt_key->setZValue(3);
+        txt_key->setPos(x-8, y-diameter);
+        tmp_key = "(min)";
+        txt_key->setPlainText(tmp_key);
+    }
 
     QGraphicsEllipseItem *el = new QGraphicsEllipseItem(x, y,
                                                         diameter, diameter,
@@ -502,4 +520,10 @@ void SimulationDialog::on_verticalSlider_valueChanged(int value)
     shared_mtx.lock();
     speed = pow(2, value);
     shared_mtx.unlock();
+}
+
+void SimulationDialog::sigExit()
+{
+    QMessageBox::information(0, "Simulator", "Simulation interrupted, exiting.");
+    std::raise(SIGINT);
 }
