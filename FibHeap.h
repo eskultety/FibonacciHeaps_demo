@@ -13,7 +13,7 @@ class FibHeap
     private:
         FibNodePtr min; // root of a tree containing minimum key
         unsigned numNodes;   // total number of nodes in the heap
-
+        unsigned next_id = 0;
         int FibConsolidate();
         int FibHeapLink(FibNodePtr y, FibNodePtr x);
         int FibCascadingCut(FibNodePtr y);

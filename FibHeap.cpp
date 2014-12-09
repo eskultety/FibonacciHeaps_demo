@@ -21,11 +21,8 @@ static void _swap (T *a, T *b)
     *b = tmp;
 }
 
-static unsigned id = 0;
-
 FibHeap::~FibHeap()
 {
-    id = 0;
     if (min)
         FibDeleteHeap(min);
 }
@@ -80,10 +77,10 @@ FibHeap::FibCreateNode(unsigned my_id, int key)
     FibNodePtr node = new(nothrow) FibNode;
     if (node) {
         if (my_id == INT_MAX) {
-            node->id = id++;
+            node->id = this->next_id++;
         } else {
             node->id = my_id;
-            id += my_id;
+            this->next_id = my_id + 1;
         }
         node->key = key;
         node->degree = 0;
@@ -172,7 +169,7 @@ FibHeap::FibConsolidate()
      * a helper boolean vector which can tell us, if the given node has already
      * been procesed, thus we need to stop looping
      */
-    vector<bool> nodes_visited(this->numNodes, false);
+    vector<bool> nodes_visited(this->next_id, false);
 
     if (!this->min || this->min == this->min->right)
         return 0;
