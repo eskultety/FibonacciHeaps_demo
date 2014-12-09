@@ -272,6 +272,7 @@ FibNodePtr
 Prim::PrimAddVertex(unsigned id)
 {
     FibNodePtr node = nullptr;
+
     if (id == UINT_MAX)
         node = fib_heap->FibCreateNode();
     else
@@ -281,7 +282,8 @@ Prim::PrimAddVertex(unsigned id)
          * with blanks
          */
         if (id > this->next_id) {
-            for (unsigned i = 0; i < id - this->next_id; i++, this->next_id++) {
+            unsigned id_difference = id - this->next_id;
+            for (unsigned i = 0; i < id_difference; i++, this->next_id++) {
                 this->adj.push_back(AdjNodeEdges());
                 this->adj[this->next_id].push_back(nullptr);
             }
