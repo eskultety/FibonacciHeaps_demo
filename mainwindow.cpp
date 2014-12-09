@@ -98,6 +98,15 @@ void MainWindow::on_pushButton_4_clicked()
         if (!items.contains(QString::number(e->getTo()->id())))
             items << QString::number(e->getTo()->id());
     }
+    foreach (gPlace *p, glob_places)
+    {
+        if (!items.contains(QString::number(p->id())))
+        {
+            QMessageBox::information(0, "Simulator", "Graph must be connected.");
+            return;
+        }
+    }
+    items.sort();
     qDialog.setOptions(QInputDialog::UseListViewForComboBoxItems);
     qDialog.setComboBoxItems(items);
     qDialog.setWindowTitle("Choose root node");

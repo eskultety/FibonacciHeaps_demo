@@ -208,15 +208,11 @@ qreal SimulationDialog::drawHeapNeighbours(FibNodePtr fb, qreal max_x, qreal y)
     qreal x = max_x;
     FibNodePtr ptr = fb->right;
 
-    //std::cerr << fb << "(" << fb->key << ") vs "  << ptr << "(" << ptr->key << ")\n";
-
     // draw all neighbours of fb children except fb neighbours
     while (ptr != fb)
     {
         x += shift;
         drawHeapLine(false, x+radius, y+radius, x-shift+radius, y+radius);
-        //drawHeapNode(ptr, x, y); -- this is done in next function call
-        //std::cerr << "drawing tree of: " << ptr << "(" << ptr->key << ")\n";
         x_shift = drawHeapTree(ptr, x, y);
         ptr = ptr->right;
     }
@@ -251,8 +247,6 @@ qreal SimulationDialog::drawHeapTree(FibNodePtr fb, qreal x, qreal m_y)
     ptr = last_child;
     while (ptr != fb)
     {
-        //std::cerr << "last_child: " << last_child << "(" << last_child->key << ")\n";
-        //std::cerr << "drawing neighs of: " << ptr << "(" << ptr->key << ")\n";
         drawHeapLine(false, x+radius, y+radius, x+radius, y-shift+radius);
         x_local_max = drawHeapNeighbours(ptr, x, y);
         if (x_local_max > x_shift)
@@ -273,8 +267,6 @@ void SimulationDialog::drawHeap(FibNodePtr min)
         scene2->clear();
         return;
     }
-
-    //std::cerr << "min: " << min << "(" << min->key << ")\n";
 
     scene2->clear();
     qreal max_x = shift;
