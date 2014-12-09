@@ -149,7 +149,6 @@ FibHeap::FibExtractMin()
 int
 FibHeap::FibConsolidate()
 {
-    FibNodePtr ptr = this->min;
     FibNodePtr ptr_x = this->min;
     FibNodePtr ptr_y = nullptr;
     double phi = ((1 + sqrt(5)) / 2); // golden ratio used for logarithm base
@@ -165,63 +164,49 @@ FibHeap::FibConsolidate()
     this->ax = &ax_array;
     #endif
 
-    if (!ptr || ptr == ptr->right)
+    /* When looping through the rootlist, we have to keep track of nodes
+     * already visited which is quite complicated with circular lists,
+     * especially when the list changes on the go. For this reason, we use
+     * a helper boolean vector which can tell us, if the given node has already
+     * been procesed, thus we need to stop looping
+     */
+    vector<bool> nodes_visited(this->numNodes, false);
+
+    if (!this->min || this->min == this->min->right)
         return 0;
 
     do {
         deg = ptr_x->degree;
+
+        /* mark current node as visited */
+        nodes_visited[ptr_x->id] = true;
         while (ax_array[deg]) {
             ptr_y = ax_array[deg];
             if (ptr_x->key > ptr_y->key) {
                 SWAP(ptr_x, ptr_y);
             }
 
-            /* when looping through the rootlist, we strongly rely on the
-             * current minimal value node, because the loop does not
-             * finish unless minimal value node found, which we
-             * definitely procesed at the beginning. In case that our
-             * minimal value node needs to be swapped and linked as child
-             * of his next neighbour, we need to update the minimal value
-             * node to his neighbour, otherwise we completely loose track
-             * of which nodes still need to be procesed, as by linking
-             * we do update all pointers.
-             */
-            if (ptr == ptr_y) {
-                ptr = ptr_x;
-                this->min = ptr;
-            }
-
-            #ifdef WITH_GUI
-                syncGUI(SIG_FIB_STEP_FINISHED);
-            #endif
-
             /* make y child of x */
             this->FibHeapLink(ptr_y, ptr_x);
             ax_array[deg] = nullptr;
             deg++;
-
-            #ifdef WITH_GUI
-                syncGUI(SIG_FIB_STEP_FINISHED);
-            #endif
         }
 
         ax_array[deg] = ptr_x;
         ptr_x = ptr_x->right;
-    } while (ptr_x != ptr);
+    } while (!nodes_visited[ptr_x->id]);
 
     this->min = nullptr;
-    ptr = this->min;
 
     /* create a new rootlist */
     for (unsigned i = 0; i < ax_array.size(); i++) {
         if (ax_array[i]) {
-            if (!ptr) {
+            if (!this->min) {
 
                 /* create a root list for H containing jus A[i] */
                 ax_array[i]->left = ax_array[i];
                 ax_array[i]->right = ax_array[i];
                 this->min = ax_array[i];
-                ptr = this->min;
 
                 #ifdef WITH_GUI
                     syncGUI(SIG_FIB_STEP_FINISHED);
@@ -234,12 +219,13 @@ FibHeap::FibConsolidate()
                     syncGUI(SIG_FIB_STEP_FINISHED);
                 #endif
 
-                if (ax_array[i]->key < ptr->key)
+                if (ax_array[i]->key < this->min->key) {
                     this->min = ax_array[i];
 
-                #ifdef WITH_GUI
-                    syncGUI(SIG_FIB_STEP_FINISHED);
-                #endif
+                    #ifdef WITH_GUI
+                        syncGUI(SIG_FIB_STEP_FINISHED);
+                    #endif
+                }
             }
         }
     }
@@ -277,9 +263,6 @@ FibHeap::FibHeapLink(FibNodePtr y, FibNodePtr x)
     x->degree++;
     y->mark = false;
 
-    #ifdef WITH_GUI
-        syncGUI(SIG_FIB_STEP_FINISHED);
-    #endif
     return 0;
 }
 
