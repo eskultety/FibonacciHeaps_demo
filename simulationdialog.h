@@ -45,7 +45,7 @@ private:
     void drawHeapNode(FibNodePtr fb, qreal x, qreal y);
     void drawHeapLine(bool dashed, qreal x1, qreal y1, qreal x2, qreal y2);
     qreal drawHeapNeighbours(FibNodePtr fb, qreal max_x, qreal y);
-    qreal drawHeapTree(FibNodePtr fb, qreal x);
+    qreal drawHeapTree(FibNodePtr fb, qreal x, qreal m_y);
     void drawHeap(FibNodePtr min);
     void drawGraph();
     void actualizeGraph(unsigned u, unsigned v);
@@ -58,6 +58,7 @@ private:
     bool step_in_progress;
     bool stepping;
     bool thread_finished;
+    bool min_written;
     unsigned root_id;
 
     QStringList prim_code;

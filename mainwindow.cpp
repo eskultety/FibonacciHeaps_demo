@@ -91,8 +91,13 @@ void MainWindow::on_pushButton_4_clicked()
 
     QInputDialog qDialog;
     QStringList items;
-    foreach (gPlace *p, glob_places)
-        items << QString::number(p->id());
+    foreach (gEdge *e, glob_edges)
+    {
+        if (!items.contains(QString::number(e->getFrom()->id())))
+            items << QString::number(e->getFrom()->id());
+        if (!items.contains(QString::number(e->getTo()->id())))
+            items << QString::number(e->getTo()->id());
+    }
     qDialog.setOptions(QInputDialog::UseListViewForComboBoxItems);
     qDialog.setComboBoxItems(items);
     qDialog.setWindowTitle("Choose root node");

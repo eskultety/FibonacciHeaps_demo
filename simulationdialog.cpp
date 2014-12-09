@@ -53,12 +53,13 @@ void simulation(unsigned root)
 SimulationDialog::SimulationDialog(unsigned m_root_id, QWidget *parent) :
     QDialog(parent), ui(new Ui::SimulationDialog)
 {
-    thread_finished = false;
+    thread_finished = true;
     root_id = m_root_id;
     initSimulation();
     running = false;
     step_in_progress = false;
     stepping = false;
+    min_written = false;
     connect(&prim_signal, SIGNAL(sig(int)), this, SLOT(sig_backend(int)));
     connect(this, SIGNAL(rejected()), this, SLOT(sigExit()));
 
@@ -150,7 +151,7 @@ void SimulationDialog::continueSimulation(bool cont)
 void SimulationDialog::exitError(QString msg)
 {
     QMessageBox::information(0, "Simulator", msg);
-    this->close();
+    std::raise(SIGINT);
 }
 
 void SimulationDialog::drawHeapNode(FibNodePtr fb, qreal x, qreal y)
@@ -168,8 +169,9 @@ void SimulationDialog::drawHeapNode(FibNodePtr fb, qreal x, qreal y)
         tmp_key = QString::number(fb->key);
     txt_key->setPlainText(tmp_key);
 
-    if (fb == prim->PrimGetHeapMin())
+    if (fb == prim->PrimGetHeapMin() && !min_written)
     {
+        min_written = true;
         txt_key = new QGraphicsTextItem(0, scene2);
         txt_key->setFont(QFont("Helvetica", 12, QFont::Bold));
         txt_key->setZValue(3);
@@ -202,27 +204,31 @@ void SimulationDialog::drawHeapLine(bool dashed, qreal x1, qreal y1,
 
 qreal SimulationDialog::drawHeapNeighbours(FibNodePtr fb, qreal max_x, qreal y)
 {
+    qreal x_shift = max_x;
     qreal x = max_x;
-    FibNodePtr begin = fb;
     FibNodePtr ptr = fb->right;
 
+    //std::cerr << fb << "(" << fb->key << ") vs "  << ptr << "(" << ptr->key << ")\n";
+
     // draw all neighbours of fb children except fb neighbours
-    while (ptr != begin)
+    while (ptr != fb)
     {
         x += shift;
         drawHeapLine(false, x+radius, y+radius, x-shift+radius, y+radius);
-        drawHeapNode(ptr, x, y);
+        //drawHeapNode(ptr, x, y); -- this is done in next function call
+        //std::cerr << "drawing tree of: " << ptr << "(" << ptr->key << ")\n";
+        x_shift = drawHeapTree(ptr, x, y);
         ptr = ptr->right;
     }
 
-    return x;
+    return x_shift;
 }
 
-qreal SimulationDialog::drawHeapTree(FibNodePtr fb, qreal x)
+qreal SimulationDialog::drawHeapTree(FibNodePtr fb, qreal x, qreal m_y)
 {
     qreal x_shift = x;
     qreal x_local_max;
-    qreal y = shift;
+    qreal y = m_y;
 
     FibNodePtr last_child = NULL;
     FibNodePtr ptr = fb;
@@ -245,6 +251,8 @@ qreal SimulationDialog::drawHeapTree(FibNodePtr fb, qreal x)
     ptr = last_child;
     while (ptr != fb)
     {
+        //std::cerr << "last_child: " << last_child << "(" << last_child->key << ")\n";
+        //std::cerr << "drawing neighs of: " << ptr << "(" << ptr->key << ")\n";
         drawHeapLine(false, x+radius, y+radius, x+radius, y-shift+radius);
         x_local_max = drawHeapNeighbours(ptr, x, y);
         if (x_local_max > x_shift)
@@ -266,6 +274,8 @@ void SimulationDialog::drawHeap(FibNodePtr min)
         return;
     }
 
+    //std::cerr << "min: " << min << "(" << min->key << ")\n";
+
     scene2->clear();
     qreal max_x = shift;
     qreal prev_x;
@@ -279,7 +289,7 @@ void SimulationDialog::drawHeap(FibNodePtr min)
                          max_x+radius, y+radius);
 
         prev_x = max_x;
-        max_x = drawHeapTree(ptr, max_x);
+        max_x = drawHeapTree(ptr, max_x, y);
         max_x += shift;
 
         ptr = ptr->right;
@@ -300,6 +310,7 @@ void SimulationDialog::on_pushButton_clicked()
     }
 
     ui->verticalSlider->setEnabled(false);
+    ui->lineEdit->clear();
 
     shared_mtx.lock();
         mode = RUN;
@@ -323,6 +334,7 @@ void SimulationDialog::on_pushButton_2_clicked()
     shared_mtx.unlock();
     step_in_progress = true;
     thread_finished = false;
+    ui->lineEdit->clear();
     ui->pushButton_2->setText("Step");
 
     if (running)
@@ -357,6 +369,7 @@ void SimulationDialog::sig_backend(int signum)
             continueSimulation();
         break;
     case SIG_FIB_STEP_FINISHED:
+        min_written = false;
         drawHeap(prim->PrimGetHeapMin());
         if (running)
             continueSimulation();
@@ -369,9 +382,8 @@ void SimulationDialog::sig_backend(int signum)
         stepping = false;
         initPrimCode();
         printPrimCode(false);
+        ui->lineEdit->setText(QString::number(prim->PrimGetMSTCost()));
         QMessageBox::information(0, "Simulator", "Simulation finished.");
-
-        std::cerr << "Min.: " << prim->PrimGetMSTCost() << std::endl;
 
         Simulation->join();
         delete Simulation;

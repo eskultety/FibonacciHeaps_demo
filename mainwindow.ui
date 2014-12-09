@@ -39,7 +39,7 @@
         <item>
          <widget class="QPushButton" name="pushButton">
           <property name="text">
-           <string>Place</string>
+           <string>Node</string>
           </property>
           <property name="checkable">
            <bool>true</bool>
