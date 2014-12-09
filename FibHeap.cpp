@@ -101,14 +101,19 @@ FibNodePtr
 FibHeap::FibExtractMin()
 {
     FibNodePtr heap_min = this->min;
-    FibNodePtr ptr = nullptr;
     FibNodePtr tmp = nullptr;
 
     if (heap_min) {
         FibNodePtr child = heap_min->child;
         if (child) {
-            ptr = child;
             do {
+                if (child == child->right)
+                    heap_min->child = nullptr;
+                else {
+                    child->left->right = child->right;
+                    child->right->left = child->left;
+                    heap_min->child = child->right;
+                }
                 tmp = child->right;
                 this->FibMoveToRoot(child);
                 child->parent = nullptr;
@@ -118,7 +123,7 @@ FibHeap::FibExtractMin()
                     syncGUI(SIG_FIB_STEP_FINISHED);
                 #endif
 
-            } while(child != ptr);
+            } while(heap_min->child);
         }
 
         /* remove minimum from the root list of H */
