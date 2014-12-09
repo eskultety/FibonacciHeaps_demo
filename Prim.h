@@ -25,8 +25,7 @@ class Prim {
 
         #ifdef WITH_GUI
         bool PrimGetStatus(void) { return status_finished; }
-        FibNodePtr PrimGetHeapMin(void);\
-        std::vector<FibNodePtr>* PrimGetAx(void);
+        FibNodePtr PrimGetHeapMin(void);
         #endif
 
 

@@ -11,12 +11,11 @@
 
 #define SIG_PRIM_STEP_FINISHED  0
 #define SIG_FIB_STEP_FINISHED   1
-#define SIG_AX_STEP_FINISHED    2
-#define SIG_FINISHED_ALL        3
-#define SIG_MIN_EXTRACTED       4
-#define SIG_MST_UPDATED         5
-#define SIG_NEXT_LINE           6
-#define SIG_ERROR               7
+#define SIG_FINISHED_ALL        2
+#define SIG_MIN_EXTRACTED       3
+#define SIG_MST_UPDATED         4
+#define SIG_NEXT_LINE           5
+#define SIG_ERROR               6
 
 #define GET_LINE(l) \
     do { \

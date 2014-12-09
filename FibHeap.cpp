@@ -160,9 +160,6 @@ FibHeap::FibConsolidate()
 
     /* auxiliary array to keep track of roots according to their degrees */
     vector<FibNodePtr> ax_array(max_degree, nullptr);
-    #ifdef WITH_GUI
-    this->ax = &ax_array;
-    #endif
 
     /* When looping through the rootlist, we have to keep track of nodes
      * already visited which is quite complicated with circular lists,
@@ -230,9 +227,6 @@ FibHeap::FibConsolidate()
         }
     }
 
-    #ifdef WITH_GUI
-    //this->ax = nullptr;
-    #endif
     return 0;
 }
 

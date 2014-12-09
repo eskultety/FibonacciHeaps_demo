@@ -14,9 +14,6 @@ class FibHeap
         FibNodePtr min; // root of a tree containing minimum key
         unsigned numNodes;   // total number of nodes in the heap
 
-        #ifdef WITH_GUI
-        std::vector<FibNodePtr> *ax = nullptr;
-        #endif
         int FibConsolidate();
         int FibHeapLink(FibNodePtr y, FibNodePtr x);
         int FibCascadingCut(FibNodePtr y);
@@ -26,9 +23,6 @@ class FibHeap
         void FibMoveToRoot(FibNodePtr x);
 
     public:
-        #ifdef WITH_GUI
-        std::vector<FibNodePtr> *FibGetAX(void) { return ax; }
-        #endif
         FibHeap() { numNodes = 0; min = nullptr; }
         ~FibHeap();
         bool FibIsEmpty() { return min == nullptr; }

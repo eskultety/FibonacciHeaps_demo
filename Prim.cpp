@@ -347,12 +347,5 @@ Prim::PrimGetHeapMin(void)
         return this->fib_heap->FibGetMin();
     return nullptr;
 }
-
-std::vector<FibNodePtr> * Prim::PrimGetAx()
-{
-    if (this->fib_heap)
-        return this->fib_heap->FibGetAX();
-    return nullptr;
-}
 #endif
 
