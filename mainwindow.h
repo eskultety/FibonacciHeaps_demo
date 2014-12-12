@@ -30,6 +30,8 @@ private slots:
     void on_pushButton_4_clicked();
     void setRoot(const QString &root);
 
+    void on_actionAbout_triggered();
+
 private:
     Ui::MainWindow *ui;
     MyQGraphicsView *view;

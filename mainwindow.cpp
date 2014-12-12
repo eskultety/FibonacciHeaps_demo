@@ -81,6 +81,7 @@ void MainWindow::on_actionLoad_triggered()
     }
 }
 
+// Simulate
 void MainWindow::on_pushButton_4_clicked()
 {
     if (glob_places.empty() || glob_edges.empty())
@@ -142,4 +143,21 @@ void MainWindow::on_pushButton_4_clicked()
 void MainWindow::setRoot(const QString &root)
 {
     root_id = root.toUInt();
+}
+
+// About
+void MainWindow::on_actionAbout_triggered()
+{
+    //QMessageBox a()
+    QMessageBox msgBox(QMessageBox::Information, "About",
+                       "Prim algorithm simulator using Fibonacci heaps.<br>"
+                       "<br>Authors:<br>"
+                       "Erik Skultety<br>"
+                       "Matus Marhefka<br><br>"
+                       "Git repository:<br>"
+                       "<a href=\"https://github.com/eskultety/FibonacciHeaps_demo/"
+                       "\">https://github.com/eskultety/FibonacciHeaps_demo/</a>"
+                       );
+    msgBox.setTextFormat(Qt::RichText);
+    msgBox.exec();
 }
