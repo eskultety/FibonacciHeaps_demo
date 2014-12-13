@@ -104,6 +104,13 @@ FibHeap::FibExtractMin()
         FibNodePtr child = heap_min->child;
         if (child) {
             do {
+                /* Properly splice out every child node and update all
+                 * pointers. The only reason why it is necessary to update
+                 * node's child pointer even though it is going to be removed
+                 * as minimal, is because we need to synchronize with GUI and
+                 * without proper update of child pointer, there's a risk
+                 * of infinite recursion when rendering the nodes
+                 */
                 if (child == child->right)
                     heap_min->child = nullptr;
                 else {
